@@ -1,0 +1,62 @@
+import React from "react";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
+import "./Dashboard.css";
+
+const STATS = [
+  { icon: "📚", label: "Courses Enrolled", value: "6" },
+  { icon: "📝", label: "Assignments Due", value: "3" },
+  { icon: "🏆", label: "CGPA", value: "8.7" },
+  { icon: "🤝", label: "Alumni Connections", value: "12" },
+];
+
+const QUICK_LINKS = [
+  { icon: "💼", label: "Internship Listings", desc: "Browse open internships posted by alumni" },
+  { icon: "🗓️", label: "Events", desc: "Upcoming college and alumni events" },
+  { icon: "📖", label: "Study Resources", desc: "Notes, papers and materials shared by seniors" },
+  { icon: "🔔", label: "Notices", desc: "Latest announcements from the college" },
+];
+
+export default function StudentDashboard() {
+  const { user } = useAuth();
+
+  return (
+    <>
+      <Navbar />
+      <div className="dashboard-container">
+        <header className="dashboard-header student">
+          <div>
+            <h1>👋 Hello, Student!</h1>
+            <p>{user?.email} &mdash; Your campus portal is ready.</p>
+          </div>
+          <div className="header-badge">Student Portal</div>
+        </header>
+
+        <section className="stats-grid">
+          {STATS.map((s) => (
+            <div key={s.label} className="stat-card">
+              <span className="stat-icon">{s.icon}</span>
+              <div>
+                <div className="stat-value">{s.value}</div>
+                <div className="stat-label">{s.label}</div>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <h2 className="section-title">Quick Links</h2>
+        <section className="links-grid">
+          {QUICK_LINKS.map((l) => (
+            <div key={l.label} className="link-card">
+              <span className="link-icon">{l.icon}</span>
+              <div>
+                <strong>{l.label}</strong>
+                <p>{l.desc}</p>
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
+    </>
+  );
+}
