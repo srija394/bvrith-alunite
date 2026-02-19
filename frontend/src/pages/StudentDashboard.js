@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import "./Dashboard.css";
@@ -19,6 +20,7 @@ const QUICK_LINKS = [
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -29,7 +31,10 @@ export default function StudentDashboard() {
             <h1>👋 Hello, Student!</h1>
             <p>{user?.email} &mdash; Your campus portal is ready.</p>
           </div>
-          <div className="header-badge">Student Portal</div>
+          <div style={{display:"flex",gap:"0.75rem",alignItems:"center"}}>
+            <button className="header-profile-btn" onClick={() => navigate("/profile/view")}>👤 My Profile</button>
+            <div className="header-badge">Student Portal</div>
+          </div>
         </header>
 
         <section className="stats-grid">
