@@ -15,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/profile", require("./routes/profileRoutes"));
+app.use("/api/mentorship", require("./routes/mentorshipRoutes"));
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

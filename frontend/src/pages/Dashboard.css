@@ -129,6 +129,16 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
 
+.link-card.highlight-card {
+  border-color: #c7d2fe;
+  background: linear-gradient(135deg, #fafbff, #f0f4ff);
+}
+
+.link-card.highlight-card:hover {
+  border-color: #0f3460;
+  box-shadow: 0 6px 20px rgba(15,52,96,0.15);
+}
+
 .link-card.admin-card:hover {
   border-color: #e94560;
 }

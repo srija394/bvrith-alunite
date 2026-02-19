@@ -14,6 +14,9 @@ import EditProfile from "./pages/EditProfile";
 import ViewProfile from "./pages/ViewProfile";
 import AlumniDirectory from "./pages/AlumniDirectory";
 import PublicAlumniProfile from "./pages/PublicAlumniProfile";
+import FindMentor from "./pages/FindMentor";
+import MentorshipInbox from "./pages/MentorshipInbox";
+import PublicStudentProfile from "./pages/PublicStudentProfile";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -35,7 +38,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Alumni Directory - accessible to all logged-in users */}
+          {/* Alumni Directory */}
           <Route path="/alumni/directory" element={
             <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
               <AlumniDirectory />
@@ -44,6 +47,25 @@ function App() {
           <Route path="/alumni/:id" element={
             <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
               <PublicAlumniProfile />
+            </ProtectedRoute>
+          } />
+
+          {/* Mentorship */}
+          <Route path="/mentorship/find" element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <FindMentor />
+            </ProtectedRoute>
+          } />
+          <Route path="/mentorship/inbox" element={
+            <ProtectedRoute allowedRoles={["alumni"]}>
+              <MentorshipInbox />
+            </ProtectedRoute>
+          } />
+
+          {/* Public profiles */}
+          <Route path="/student/:id" element={
+            <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
+              <PublicStudentProfile />
             </ProtectedRoute>
           } />
 

@@ -16,10 +16,10 @@ export default function AlumniDashboard() {
   const navigate = useNavigate();
 
   const QUICK_LINKS = [
+    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student mentorship requests", path: "/mentorship/inbox", highlight: true },
     { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
     { icon: "📢", label: "Post a Job / Internship", desc: "Help juniors find opportunities", path: null },
     { icon: "🎤", label: "Request to Speak", desc: "Come back as a guest speaker for events", path: null },
-    { icon: "👨‍🎓", label: "Mentorship Program", desc: "Volunteer to mentor current students", path: null },
   ];
 
   return (
@@ -52,7 +52,12 @@ export default function AlumniDashboard() {
         <h2 className="section-title">What would you like to do?</h2>
         <section className="links-grid">
           {QUICK_LINKS.map((l) => (
-            <div key={l.label} className="link-card" onClick={() => l.path && navigate(l.path)}>
+            <div
+              key={l.label}
+              className={`link-card ${l.highlight ? "highlight-card" : ""}`}
+              onClick={() => l.path && navigate(l.path)}
+              style={{ cursor: l.path ? "pointer" : "default" }}
+            >
               <span className="link-icon">{l.icon}</span>
               <div>
                 <strong>{l.label}</strong>

@@ -16,10 +16,10 @@ export default function StudentDashboard() {
   const navigate = useNavigate();
 
   const QUICK_LINKS = [
+    { icon: "🤖", label: "Find a Mentor", desc: "AI-matched mentors based on your skills & goals", path: "/mentorship/find", highlight: true },
     { icon: "🎓", label: "Alumni Directory", desc: "Search and connect with BVRITH graduates", path: "/alumni/directory" },
     { icon: "💼", label: "Internship Listings", desc: "Browse open internships posted by alumni", path: null },
     { icon: "🗓️", label: "Events", desc: "Upcoming college and alumni events", path: null },
-    { icon: "📖", label: "Study Resources", desc: "Notes, papers and materials shared by seniors", path: null },
   ];
 
   return (
@@ -52,7 +52,12 @@ export default function StudentDashboard() {
         <h2 className="section-title">Quick Links</h2>
         <section className="links-grid">
           {QUICK_LINKS.map((l) => (
-            <div key={l.label} className="link-card" onClick={() => l.path && navigate(l.path)}>
+            <div
+              key={l.label}
+              className={`link-card ${l.highlight ? "highlight-card" : ""}`}
+              onClick={() => l.path && navigate(l.path)}
+              style={{ cursor: l.path ? "pointer" : "default" }}
+            >
               <span className="link-icon">{l.icon}</span>
               <div>
                 <strong>{l.label}</strong>
