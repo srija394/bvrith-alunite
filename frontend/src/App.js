@@ -12,6 +12,8 @@ import Unauthorized from "./pages/Unauthorized";
 import CreateProfile from "./pages/CreateProfile";
 import EditProfile from "./pages/EditProfile";
 import ViewProfile from "./pages/ViewProfile";
+import AlumniDirectory from "./pages/AlumniDirectory";
+import PublicAlumniProfile from "./pages/PublicAlumniProfile";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -33,22 +35,30 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Protected - Student */}
+          {/* Alumni Directory - accessible to all logged-in users */}
+          <Route path="/alumni/directory" element={
+            <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
+              <AlumniDirectory />
+            </ProtectedRoute>
+          } />
+          <Route path="/alumni/:id" element={
+            <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
+              <PublicAlumniProfile />
+            </ProtectedRoute>
+          } />
+
+          {/* Dashboards */}
           <Route path="/dashboard/student" element={
             <ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>
           } />
-
-          {/* Protected - Alumni */}
           <Route path="/dashboard/alumni" element={
             <ProtectedRoute allowedRoles={["alumni"]}><AlumniDashboard /></ProtectedRoute>
           } />
-
-          {/* Protected - Admin */}
           <Route path="/dashboard/admin" element={
             <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>
           } />
 
-          {/* Profile routes (student + alumni) */}
+          {/* Profile */}
           <Route path="/profile/create" element={
             <ProtectedRoute allowedRoles={["student", "alumni"]}><CreateProfile /></ProtectedRoute>
           } />
@@ -59,7 +69,6 @@ function App() {
             <ProtectedRoute allowedRoles={["student", "alumni"]}><ViewProfile /></ProtectedRoute>
           } />
 
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

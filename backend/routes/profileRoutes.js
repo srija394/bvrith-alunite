@@ -7,6 +7,7 @@ const {
   getProfileById,
   getAllAlumni,
   getAllStudents,
+  getAlumniFilterOptions,
 } = require("../controllers/profileController");
 
 const router = express.Router();
@@ -16,11 +17,14 @@ router.get("/me", protect(["student", "alumni"]), getMyProfile);
 router.post("/me", protect(["student", "alumni"]), createProfile);
 router.put("/me", protect(["student", "alumni"]), updateProfile);
 
-// Public: view any profile by userId + role
-router.get("/:role/:id", getProfileById);
+// Alumni directory - search, filter, paginate (public)
+router.get("/alumni/all", getAllAlumni);
+router.get("/alumni/filters", getAlumniFilterOptions);
 
-// Directory
-router.get("/alumni/all", getAllAlumni); // public - alumni directory
-router.get("/students/all", protect(["admin"]), getAllStudents); // admin only
+// Admin only
+router.get("/students/all", protect(["admin"]), getAllStudents);
+
+// Public: view any profile by userId + role (keep LAST to avoid route conflicts)
+router.get("/:role/:id", getProfileById);
 
 module.exports = router;

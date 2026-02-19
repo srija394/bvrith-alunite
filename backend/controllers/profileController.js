@@ -81,13 +81,84 @@ exports.getProfileById = async (req, res) => {
   }
 };
 
-// ─── GET all alumni profiles (for directory) ─────────────
+// ─── GET all alumni profiles with search, filter, pagination ─
 exports.getAllAlumni = async (req, res) => {
   try {
-    const profiles = await AlumniProfile.find()
-      .populate("user", "email")
-      .select("-__v");
-    res.json({ profiles });
+    const {
+      search = "",
+      branch = "",
+      graduationYear = "",
+      skills = "",
+      page = 1,
+      limit = 12,
+    } = req.query;
+
+    const query = {};
+
+    // Full-text search on name, company, role, location
+    if (search.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      query.$or = [
+        { fullName: regex },
+        { currentCompany: regex },
+        { currentRole: regex },
+        { location: regex },
+      ];
+    }
+
+    // Filter by branch
+    if (branch) query.branch = branch;
+
+    // Filter by graduation year
+    if (graduationYear) query.graduationYear = Number(graduationYear);
+
+    // Filter by skills (any match)
+    if (skills) {
+      const skillList = skills.split(",").map((s) => s.trim()).filter(Boolean);
+      if (skillList.length) query.skills = { $in: skillList.map((s) => new RegExp(s, "i")) };
+    }
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [profiles, total] = await Promise.all([
+      AlumniProfile.find(query)
+        .populate("user", "email")
+        .select("-__v")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      AlumniProfile.countDocuments(query),
+    ]);
+
+    res.json({
+      profiles,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── GET distinct filter options (for dropdowns) ──────────
+exports.getAlumniFilterOptions = async (req, res) => {
+  try {
+    const [branches, years, skills] = await Promise.all([
+      AlumniProfile.distinct("branch"),
+      AlumniProfile.distinct("graduationYear"),
+      AlumniProfile.distinct("skills"),
+    ]);
+    res.json({
+      branches: branches.filter(Boolean).sort(),
+      years: years.filter(Boolean).sort((a, b) => b - a),
+      skills: skills.filter(Boolean).sort(),
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

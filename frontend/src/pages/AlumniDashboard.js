@@ -11,16 +11,16 @@ const STATS = [
   { icon: "🌐", label: "Network Size", value: "148" },
 ];
 
-const QUICK_LINKS = [
-  { icon: "📢", label: "Post a Job / Internship", desc: "Help juniors find opportunities" },
-  { icon: "🎤", label: "Request to Speak", desc: "Come back as a guest speaker for events" },
-  { icon: "👨‍🎓", label: "Mentorship Program", desc: "Volunteer to mentor current students" },
-  { icon: "📸", label: "Alumni Directory", desc: "Connect with batchmates and seniors" },
-];
-
 export default function AlumniDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const QUICK_LINKS = [
+    { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
+    { icon: "📢", label: "Post a Job / Internship", desc: "Help juniors find opportunities", path: null },
+    { icon: "🎤", label: "Request to Speak", desc: "Come back as a guest speaker for events", path: null },
+    { icon: "👨‍🎓", label: "Mentorship Program", desc: "Volunteer to mentor current students", path: null },
+  ];
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function AlumniDashboard() {
             <h1>👋 Welcome Back, Alumni!</h1>
             <p>{user?.email} &mdash; Stay connected with BVRITH.</p>
           </div>
-          <div style={{display:"flex",gap:"0.75rem",alignItems:"center"}}>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
             <button className="header-profile-btn" onClick={() => navigate("/profile/view")}>👤 My Profile</button>
             <div className="header-badge alumni-badge">Alumni Portal</div>
           </div>
@@ -52,7 +52,7 @@ export default function AlumniDashboard() {
         <h2 className="section-title">What would you like to do?</h2>
         <section className="links-grid">
           {QUICK_LINKS.map((l) => (
-            <div key={l.label} className="link-card">
+            <div key={l.label} className="link-card" onClick={() => l.path && navigate(l.path)}>
               <span className="link-icon">{l.icon}</span>
               <div>
                 <strong>{l.label}</strong>

@@ -11,16 +11,16 @@ const STATS = [
   { icon: "🤝", label: "Alumni Connections", value: "12" },
 ];
 
-const QUICK_LINKS = [
-  { icon: "💼", label: "Internship Listings", desc: "Browse open internships posted by alumni" },
-  { icon: "🗓️", label: "Events", desc: "Upcoming college and alumni events" },
-  { icon: "📖", label: "Study Resources", desc: "Notes, papers and materials shared by seniors" },
-  { icon: "🔔", label: "Notices", desc: "Latest announcements from the college" },
-];
-
 export default function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const QUICK_LINKS = [
+    { icon: "🎓", label: "Alumni Directory", desc: "Search and connect with BVRITH graduates", path: "/alumni/directory" },
+    { icon: "💼", label: "Internship Listings", desc: "Browse open internships posted by alumni", path: null },
+    { icon: "🗓️", label: "Events", desc: "Upcoming college and alumni events", path: null },
+    { icon: "📖", label: "Study Resources", desc: "Notes, papers and materials shared by seniors", path: null },
+  ];
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function StudentDashboard() {
             <h1>👋 Hello, Student!</h1>
             <p>{user?.email} &mdash; Your campus portal is ready.</p>
           </div>
-          <div style={{display:"flex",gap:"0.75rem",alignItems:"center"}}>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
             <button className="header-profile-btn" onClick={() => navigate("/profile/view")}>👤 My Profile</button>
             <div className="header-badge">Student Portal</div>
           </div>
@@ -52,7 +52,7 @@ export default function StudentDashboard() {
         <h2 className="section-title">Quick Links</h2>
         <section className="links-grid">
           {QUICK_LINKS.map((l) => (
-            <div key={l.label} className="link-card">
+            <div key={l.label} className="link-card" onClick={() => l.path && navigate(l.path)}>
               <span className="link-icon">{l.icon}</span>
               <div>
                 <strong>{l.label}</strong>
