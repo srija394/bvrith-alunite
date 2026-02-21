@@ -226,7 +226,12 @@ function MentorCard({ rec, onRequest, navigate, getScoreColor, getScoreLabel }) 
           <span className="status-badge pending">⏳ Request Pending</span>
         )}
         {requestStatus === "accepted" && (
-          <span className="status-badge accepted">✅ Accepted</span>
+          <>
+            <span className="status-badge accepted">✅ Accepted</span>
+            <button className="btn-request" onClick={() => navigate(`/messages/${alumniUserId}`)}>
+              💬 Message
+            </button>
+          </>
         )}
         {requestStatus === "rejected" && (
           <button className="btn-request" onClick={onRequest}>Re-request</button>

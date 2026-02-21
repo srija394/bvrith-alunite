@@ -186,6 +186,15 @@ function RequestCard({ req, onRespond, responding, navigate }) {
             View Profile
           </button>
 
+          {req.status === "accepted" && (
+            <button
+              className="btn-message"
+              onClick={() => navigate(`/messages/${req.student?.userId}`)}
+            >
+              💬 Message
+            </button>
+          )}
+
           {req.status === "pending" && (
             <>
               <button

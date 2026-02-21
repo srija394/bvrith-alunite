@@ -17,9 +17,9 @@ export default function AlumniDashboard() {
 
   const QUICK_LINKS = [
     { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student mentorship requests", path: "/mentorship/inbox", highlight: true },
+    { icon: "💬", label: "Messages", desc: "Chat with students you're mentoring", path: "/messages", highlight: true },
     { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
     { icon: "📢", label: "Post a Job / Internship", desc: "Help juniors find opportunities", path: null },
-    { icon: "🎤", label: "Request to Speak", desc: "Come back as a guest speaker for events", path: null },
   ];
 
   return (

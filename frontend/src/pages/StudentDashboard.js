@@ -17,9 +17,9 @@ export default function StudentDashboard() {
 
   const QUICK_LINKS = [
     { icon: "🤖", label: "Find a Mentor", desc: "AI-matched mentors based on your skills & goals", path: "/mentorship/find", highlight: true },
+    { icon: "💬", label: "Messages", desc: "Chat with your mentors and alumni", path: "/messages", highlight: true },
     { icon: "🎓", label: "Alumni Directory", desc: "Search and connect with BVRITH graduates", path: "/alumni/directory" },
     { icon: "💼", label: "Internship Listings", desc: "Browse open internships posted by alumni", path: null },
-    { icon: "🗓️", label: "Events", desc: "Upcoming college and alumni events", path: null },
   ];
 
   return (

@@ -2,8 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
+// Decode JWT payload without a library
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return {};
+  }
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // { token, role, email }
+  const [user, setUser] = useState(null); // { token, role, email, id }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -11,7 +20,8 @@ export function AuthProvider({ children }) {
     const role = localStorage.getItem("role");
     const email = localStorage.getItem("email");
     if (token && role) {
-      setUser({ token, role, email });
+      const { id } = parseJwt(token);
+      setUser({ token, role, email, id });
     }
     setLoading(false);
   }, []);
@@ -20,7 +30,8 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", token);
     localStorage.setItem("role", role);
     localStorage.setItem("email", email || "");
-    setUser({ token, role, email });
+    const { id } = parseJwt(token);
+    setUser({ token, role, email, id });
   };
 
   const logout = () => {
