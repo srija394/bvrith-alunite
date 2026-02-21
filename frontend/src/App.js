@@ -19,6 +19,8 @@ import FindMentor from "./pages/FindMentor";
 import MentorshipInbox from "./pages/MentorshipInbox";
 import MessagesInbox from "./pages/MessagesInbox";
 import MessageThread from "./pages/MessageThread";
+import EventsPage from "./pages/EventsPage";
+import EventDetail from "./pages/EventDetail";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -34,76 +36,31 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public */}
           <Route path="/" element={<RootRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Alumni Directory */}
-          <Route path="/alumni/directory" element={
-            <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
-              <AlumniDirectory />
-            </ProtectedRoute>
-          } />
-          <Route path="/alumni/:id" element={
-            <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
-              <PublicAlumniProfile />
-            </ProtectedRoute>
-          } />
+          <Route path="/alumni/directory" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><AlumniDirectory /></ProtectedRoute>} />
+          <Route path="/alumni/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><PublicAlumniProfile /></ProtectedRoute>} />
+          <Route path="/student/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><PublicStudentProfile /></ProtectedRoute>} />
 
-          {/* Student public profile */}
-          <Route path="/student/:id" element={
-            <ProtectedRoute allowedRoles={["student", "alumni", "admin"]}>
-              <PublicStudentProfile />
-            </ProtectedRoute>
-          } />
+          <Route path="/mentorship/find" element={<ProtectedRoute allowedRoles={["student"]}><FindMentor /></ProtectedRoute>} />
+          <Route path="/mentorship/inbox" element={<ProtectedRoute allowedRoles={["alumni"]}><MentorshipInbox /></ProtectedRoute>} />
 
-          {/* Mentorship */}
-          <Route path="/mentorship/find" element={
-            <ProtectedRoute allowedRoles={["student"]}>
-              <FindMentor />
-            </ProtectedRoute>
-          } />
-          <Route path="/mentorship/inbox" element={
-            <ProtectedRoute allowedRoles={["alumni"]}>
-              <MentorshipInbox />
-            </ProtectedRoute>
-          } />
+          <Route path="/messages" element={<ProtectedRoute allowedRoles={["student","alumni"]}><MessagesInbox /></ProtectedRoute>} />
+          <Route path="/messages/:userId" element={<ProtectedRoute allowedRoles={["student","alumni"]}><MessageThread /></ProtectedRoute>} />
 
-          {/* Messages */}
-          <Route path="/messages" element={
-            <ProtectedRoute allowedRoles={["student", "alumni"]}>
-              <MessagesInbox />
-            </ProtectedRoute>
-          } />
-          <Route path="/messages/:userId" element={
-            <ProtectedRoute allowedRoles={["student", "alumni"]}>
-              <MessageThread />
-            </ProtectedRoute>
-          } />
+          <Route path="/events" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><EventsPage /></ProtectedRoute>} />
+          <Route path="/events/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><EventDetail /></ProtectedRoute>} />
 
-          {/* Dashboards */}
-          <Route path="/dashboard/student" element={
-            <ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>
-          } />
-          <Route path="/dashboard/alumni" element={
-            <ProtectedRoute allowedRoles={["alumni"]}><AlumniDashboard /></ProtectedRoute>
-          } />
-          <Route path="/dashboard/admin" element={
-            <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>
-          } />
+          <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/alumni" element={<ProtectedRoute allowedRoles={["alumni"]}><AlumniDashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
 
-          {/* Profile */}
-          <Route path="/profile/create" element={
-            <ProtectedRoute allowedRoles={["student", "alumni"]}><CreateProfile /></ProtectedRoute>
-          } />
-          <Route path="/profile/edit" element={
-            <ProtectedRoute allowedRoles={["student", "alumni"]}><EditProfile /></ProtectedRoute>
-          } />
-          <Route path="/profile/view" element={
-            <ProtectedRoute allowedRoles={["student", "alumni"]}><ViewProfile /></ProtectedRoute>
-          } />
+          <Route path="/profile/create" element={<ProtectedRoute allowedRoles={["student","alumni"]}><CreateProfile /></ProtectedRoute>} />
+          <Route path="/profile/edit" element={<ProtectedRoute allowedRoles={["student","alumni"]}><EditProfile /></ProtectedRoute>} />
+          <Route path="/profile/view" element={<ProtectedRoute allowedRoles={["student","alumni"]}><ViewProfile /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

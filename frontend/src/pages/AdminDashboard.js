@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import "./Dashboard.css";
@@ -11,14 +12,15 @@ const STATS = [
 ];
 
 const ADMIN_ACTIONS = [
-  { icon: "✅", label: "Approve Registrations", desc: "Review and approve new user sign-ups" },
-  { icon: "🗑️", label: "Manage Users", desc: "Edit roles, deactivate or delete accounts" },
-  { icon: "📊", label: "Reports & Analytics", desc: "View engagement metrics and activity logs" },
-  { icon: "📣", label: "Send Announcements", desc: "Broadcast notices to students or alumni" },
+  { icon: "🗓️", label: "Events", desc: "Create and manage college events", path: "/events" },
+  { icon: "🎓", label: "Alumni Directory", desc: "Browse all alumni profiles", path: "/alumni/directory" },
+  { icon: "✅", label: "Approve Registrations", desc: "Review and approve new user sign-ups", path: null },
+  { icon: "🗑️", label: "Manage Users", desc: "Edit roles, deactivate or delete accounts", path: null },
 ];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -47,7 +49,12 @@ export default function AdminDashboard() {
         <h2 className="section-title">Admin Actions</h2>
         <section className="links-grid">
           {ADMIN_ACTIONS.map((a) => (
-            <div key={a.label} className="link-card admin-card">
+            <div
+              key={a.label}
+              className={`link-card ${a.path ? "highlight-card" : "admin-card"}`}
+              onClick={() => a.path && navigate(a.path)}
+              style={{ cursor: a.path ? "pointer" : "default" }}
+            >
               <span className="link-icon">{a.icon}</span>
               <div>
                 <strong>{a.label}</strong>

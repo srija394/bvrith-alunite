@@ -16,10 +16,10 @@ export default function AlumniDashboard() {
   const navigate = useNavigate();
 
   const QUICK_LINKS = [
-    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student mentorship requests", path: "/mentorship/inbox", highlight: true },
+    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests", path: "/mentorship/inbox", highlight: true },
     { icon: "💬", label: "Messages", desc: "Chat with students you're mentoring", path: "/messages", highlight: true },
+    { icon: "🗓️", label: "Events", desc: "Create and manage college events", path: "/events" },
     { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
-    { icon: "📢", label: "Post a Job / Internship", desc: "Help juniors find opportunities", path: null },
   ];
 
   return (
@@ -36,33 +36,21 @@ export default function AlumniDashboard() {
             <div className="header-badge alumni-badge">Alumni Portal</div>
           </div>
         </header>
-
         <section className="stats-grid">
           {STATS.map((s) => (
             <div key={s.label} className="stat-card">
               <span className="stat-icon">{s.icon}</span>
-              <div>
-                <div className="stat-value">{s.value}</div>
-                <div className="stat-label">{s.label}</div>
-              </div>
+              <div><div className="stat-value">{s.value}</div><div className="stat-label">{s.label}</div></div>
             </div>
           ))}
         </section>
-
         <h2 className="section-title">What would you like to do?</h2>
         <section className="links-grid">
           {QUICK_LINKS.map((l) => (
-            <div
-              key={l.label}
-              className={`link-card ${l.highlight ? "highlight-card" : ""}`}
-              onClick={() => l.path && navigate(l.path)}
-              style={{ cursor: l.path ? "pointer" : "default" }}
-            >
+            <div key={l.label} className={`link-card ${l.highlight ? "highlight-card" : ""}`}
+              onClick={() => l.path && navigate(l.path)} style={{ cursor: l.path ? "pointer" : "default" }}>
               <span className="link-icon">{l.icon}</span>
-              <div>
-                <strong>{l.label}</strong>
-                <p>{l.desc}</p>
-              </div>
+              <div><strong>{l.label}</strong><p>{l.desc}</p></div>
             </div>
           ))}
         </section>
