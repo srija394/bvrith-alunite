@@ -173,3 +173,41 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* ── Announcement preview on dashboards ── */
+.announcements-preview {
+  margin-bottom: 1.5rem;
+}
+
+.announcement-preview-card {
+  background: #fff;
+  border: 1.5px solid #e0e7ff;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.announcement-preview-card.pinned {
+  border-color: #fbbf24;
+  background: #fffdf0;
+}
+
+.announcement-preview-card strong {
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.announcement-preview-card p {
+  font-size: 0.82rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.pin-dot { font-size: 0.85rem; }

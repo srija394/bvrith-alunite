@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+import API from "../utils/api";
 import "./Dashboard.css";
 
 const STATS = [
@@ -14,6 +15,13 @@ const STATS = [
 export default function AlumniDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [announcements, setAnnouncements] = useState([]);
+
+  useEffect(() => {
+    API.get("/admin/announcements?role=alumni").then((r) => {
+      setAnnouncements(r.data.announcements.slice(0, 3));
+    }).catch(() => {});
+  }, []);
 
   const QUICK_LINKS = [
     { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests", path: "/mentorship/inbox", highlight: true },
@@ -36,6 +44,20 @@ export default function AlumniDashboard() {
             <div className="header-badge alumni-badge">Alumni Portal</div>
           </div>
         </header>
+
+        {announcements.length > 0 && (
+          <section className="announcements-preview">
+            <h2 className="section-title">📣 Announcements</h2>
+            {announcements.map((a) => (
+              <div key={a._id} className={`announcement-preview-card ${a.pinned ? "pinned" : ""}`}>
+                {a.pinned && <span className="pin-dot">📌</span>}
+                <strong>{a.title}</strong>
+                <p>{a.content.slice(0, 120)}{a.content.length > 120 ? "..." : ""}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
         <section className="stats-grid">
           {STATS.map((s) => (
             <div key={s.label} className="stat-card">

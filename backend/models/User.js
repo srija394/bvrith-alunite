@@ -14,7 +14,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["student", "alumni", "admin"],
     required: true
+  },
+  isApproved: {
+    type: Boolean,
+    default: true  // students auto-approved; alumni can be set to false for review flow
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  announcement: {
+    type: String,
+    default: null
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);
