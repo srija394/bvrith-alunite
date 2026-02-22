@@ -18,6 +18,7 @@ app.use("/api/profile", require("./routes/profileRoutes"));
 app.use("/api/mentorship", require("./routes/mentorshipRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
 app.use("/api/events", require("./routes/eventRoutes"));
+app.use("/api/upload", require("./routes/uploadRoutes"));
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

@@ -62,6 +62,19 @@
 
 .btn-view:hover { opacity: 0.85; }
 
+.btn-files {
+  background: transparent;
+  border: 1.5px solid #0f3460;
+  color: #0f3460;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-files:hover { background: #0f3460; color: #fff; }
+
 /* ─── Alerts ─────────────────────────────────────────────── */
 .page-error {
   background: #fff0f0;
@@ -232,4 +245,38 @@
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0;
+}
+
+/* ── Public file display (resume + certs on public profiles) ── */
+.public-file-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #f8f9ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.public-file-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.2rem;
+}
+
+.public-file-link {
+  font-size: 0.8rem;
+  color: #0f3460;
+  font-weight: 700;
+  text-decoration: none;
+}
+.public-file-link:hover { text-decoration: underline; }
+
+.public-certs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }

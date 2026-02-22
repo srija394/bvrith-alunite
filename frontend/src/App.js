@@ -21,6 +21,7 @@ import MessagesInbox from "./pages/MessagesInbox";
 import MessageThread from "./pages/MessageThread";
 import EventsPage from "./pages/EventsPage";
 import EventDetail from "./pages/EventDetail";
+import MyFiles from "./pages/MyFiles";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -53,6 +54,8 @@ function App() {
 
           <Route path="/events" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><EventsPage /></ProtectedRoute>} />
           <Route path="/events/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><EventDetail /></ProtectedRoute>} />
+
+          <Route path="/my-files" element={<ProtectedRoute allowedRoles={["student","alumni"]}><MyFiles /></ProtectedRoute>} />
 
           <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
           <Route path="/dashboard/alumni" element={<ProtectedRoute allowedRoles={["alumni"]}><AlumniDashboard /></ProtectedRoute>} />

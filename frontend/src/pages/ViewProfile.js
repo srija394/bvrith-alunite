@@ -42,6 +42,7 @@ export default function ViewProfile() {
           </div>
           <div className="header-actions">
             <button className="btn-view" onClick={() => navigate("/profile/edit")}>Edit Profile</button>
+            <button className="btn-files" onClick={() => navigate("/my-files")}>☁️ My Files</button>
             <button className="btn-back" onClick={() => navigate(dashboardLink)}>← Dashboard</button>
           </div>
         </div>

@@ -94,6 +94,44 @@ export default function PublicAlumniProfile() {
               <p className="bio-text">{profile.bio}</p>
             </div>
           )}
+
+          {/* ── Resume ── */}
+          {profile.resumeUrl && (
+            <div className="profile-section">
+              <h3>📄 Resume</h3>
+              <div className="public-file-item">
+                <span>📎</span>
+                <div>
+                  <p className="public-file-name">{profile.resumeName || "Resume"}</p>
+                  <a href={profile.resumeUrl} target="_blank" rel="noreferrer" className="public-file-link">
+                    View / Download Resume ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Certificates ── */}
+          {profile.certificates?.length > 0 && (
+            <div className="profile-section">
+              <h3>🏆 Certificates</h3>
+              <div className="public-certs-list">
+                {profile.certificates.map((cert, i) => (
+                  <div key={i} className="public-file-item">
+                    <span>🎖️</span>
+                    <div>
+                      <p className="public-file-name">{cert.name}</p>
+                      {cert.url && (
+                        <a href={cert.url} target="_blank" rel="noreferrer" className="public-file-link">
+                          View / Download ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

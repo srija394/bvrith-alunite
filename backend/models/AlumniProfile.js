@@ -24,8 +24,19 @@ const alumniProfileSchema = new mongoose.Schema(
     location: { type: String, trim: true },
     skills: [{ type: String, trim: true }],
     bio: { type: String, maxlength: 500 },
-    profilePhoto: { type: String }, // URL
+    profilePhoto: { type: String }, // URL or signed URL
+    photoKey: { type: String },     // S3 key for photo
     isAvailableForMentorship: { type: Boolean, default: false },
+    resumeKey: { type: String },    // S3 key
+    resumeName: { type: String },   // original filename
+    certificates: [
+      {
+        key: { type: String },
+        name: { type: String },
+        originalName: { type: String },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

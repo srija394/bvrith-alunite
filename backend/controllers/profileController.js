@@ -75,7 +75,49 @@ exports.getProfileById = async (req, res) => {
     const profile = await Model.findOne({ user: id }).populate("user", "email role");
     if (!profile)
       return res.status(404).json({ message: "Profile not found" });
-    res.json({ profile });
+
+    const obj = profile.toObject();
+
+    // Generate signed URLs for all S3 files
+    if (profile.resumeKey || profile.certificates?.length > 0 || profile.photoKey) {
+      try {
+        const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
+        const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+        const s3 = new S3Client({
+          region: process.env.AWS_REGION,
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          },
+        });
+
+        const sign = (key) => {
+          if (!key) return null;
+          const cmd = new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key });
+          return getSignedUrl(s3, cmd, { expiresIn: 3600 });
+        };
+
+        // Resume URL
+        if (profile.resumeKey) obj.resumeUrl = await sign(profile.resumeKey);
+
+        // Photo URL
+        if (profile.photoKey) obj.photoUrl = await sign(profile.photoKey);
+
+        // Certificate URLs — attach url to each cert object
+        if (profile.certificates?.length > 0) {
+          obj.certificates = await Promise.all(
+            profile.certificates.map(async (cert) => ({
+              ...cert,
+              url: await sign(cert.key),
+            }))
+          );
+        }
+      } catch (e) {
+        console.warn("Signed URL generation failed:", e.message);
+      }
+    }
+
+    res.json({ profile: obj });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

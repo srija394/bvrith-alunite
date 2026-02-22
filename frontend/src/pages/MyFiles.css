@@ -1,0 +1,265 @@
+.myfiles-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.myfiles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.myfiles-header h1 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 0.25rem;
+}
+
+.myfiles-header p { color: #666; margin: 0; font-size: 0.95rem; }
+
+.btn-back {
+  background: transparent;
+  border: 1.5px solid #ccc;
+  color: #555;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-back:hover { border-color: #0f3460; color: #0f3460; }
+
+/* ─── Alerts ─────────────────────────────────────────────── */
+.files-success {
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.files-error {
+  background: #fff0f0;
+  color: #cc0000;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ─── Loading ────────────────────────────────────────────── */
+.files-loading {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #888;
+}
+
+.files-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e7ff;
+  border-top-color: #0f3460;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Files Grid ─────────────────────────────────────────── */
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  align-items: start;
+}
+
+.cert-card {
+  grid-column: span 1;
+}
+
+@media (min-width: 860px) {
+  .cert-card { grid-column: span 2; }
+}
+
+/* ─── File Card ──────────────────────────────────────────── */
+.file-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  border: 1.5px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.file-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.file-icon { font-size: 2rem; flex-shrink: 0; }
+
+.file-card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.15rem;
+}
+
+.file-card-header p {
+  font-size: 0.78rem;
+  color: #999;
+  margin: 0;
+}
+
+/* ─── Photo Preview ──────────────────────────────────────── */
+.photo-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #e0e7ff;
+  margin: 0 auto;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ─── Existing File ──────────────────────────────────────── */
+.file-existing {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8f9ff;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e0e7ff;
+}
+
+.file-name-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+.file-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.2rem;
+  word-break: break-word;
+}
+
+.file-view-link {
+  font-size: 0.78rem;
+  color: #0f3460;
+  font-weight: 700;
+  text-decoration: none;
+}
+.file-view-link:hover { text-decoration: underline; }
+
+/* ─── Upload Button ──────────────────────────────────────── */
+.btn-upload {
+  background: linear-gradient(90deg, #0f3460, #1a4a7a);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+.btn-upload:hover:not(:disabled) { opacity: 0.88; }
+.btn-upload:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ─── Certificates ───────────────────────────────────────── */
+.cert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cert-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8f9ff;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #e0e7ff;
+}
+
+.cert-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+.cert-info { flex: 1; min-width: 0; }
+
+.cert-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-delete-cert {
+  background: transparent;
+  border: 1.5px solid #fecaca;
+  color: #dc2626;
+  border-radius: 7px;
+  padding: 0.3rem 0.45rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.btn-delete-cert:hover { background: #fee2e2; }
+
+.cert-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-top: 1px dashed #e0e0e0;
+  padding-top: 0.9rem;
+}
+
+.cert-name-input {
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.cert-name-input:focus { border-color: #0f3460; }
+
+/* ─── S3 Info Box ────────────────────────────────────────── */
+.s3-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #f0f4ff, #f0fdf4);
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.s3-info-box span { font-size: 1.2rem; flex-shrink: 0; }
+.s3-info-box p { margin: 0; }
