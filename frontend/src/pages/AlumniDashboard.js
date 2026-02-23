@@ -27,6 +27,7 @@ export default function AlumniDashboard() {
     { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests", path: "/mentorship/inbox", highlight: true },
     { icon: "💬", label: "Messages", desc: "Chat with students you're mentoring", path: "/messages", highlight: true },
     { icon: "🗓️", label: "Events", desc: "Create and manage college events", path: "/events" },
+    { icon: "💬", label: "Discussion Forum", desc: "Answer student questions and share knowledge", path: "/forum" },
     { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
   ];
 

@@ -25,6 +25,7 @@ export default function AdminDashboard() {
             <p>Full institution-level management</p>
           </div>
           <div className="admin-header-actions">
+            <button className="btn-admin-secondary" onClick={() => navigate("/forum")}>💬 Forum</button>
             <button className="btn-admin-secondary" onClick={() => navigate("/events")}>🗓️ Events</button>
             <button className="btn-admin-secondary" onClick={() => navigate("/alumni/directory")}>🎓 Directory</button>
           </div>

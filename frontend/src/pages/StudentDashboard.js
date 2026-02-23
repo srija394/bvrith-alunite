@@ -28,6 +28,7 @@ export default function StudentDashboard() {
     { icon: "💬", label: "Messages", desc: "Chat with your mentors and alumni", path: "/messages", highlight: true },
     { icon: "🎓", label: "Alumni Directory", desc: "Search and connect with BVRITH graduates", path: "/alumni/directory" },
     { icon: "🗓️", label: "Events", desc: "Upcoming college talks, workshops & reunions", path: "/events" },
+    { icon: "💬", label: "Discussion Forum", desc: "Ask questions, get answers from alumni", path: "/forum" },
   ];
 
   return (
