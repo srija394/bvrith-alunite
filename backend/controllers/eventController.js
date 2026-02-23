@@ -138,6 +138,20 @@ exports.registerForEvent = async (req, res) => {
     event.registrations.push({ user: req.user.id });
     await event.save();
 
+    // ── Email confirmation to registrant ──
+    const { sendEventRegistrationEmail } = require("../utils/emailService");
+    const User = require("../models/User");
+    const registrant = await User.findById(req.user.id).select("email");
+    if (registrant) {
+      await sendEventRegistrationEmail(
+        registrant.email,
+        event.title,
+        event.date,
+        event.time,
+        event.venue
+      );
+    }
+
     res.json({ message: "Registered successfully!", registrationCount: event.registrations.length });
   } catch (err) {
     res.status(500).json({ message: "Server error" });

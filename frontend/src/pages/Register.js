@@ -38,8 +38,8 @@ export default function Register() {
         password: form.password,
         role: form.role,
       });
-      setSuccess("Account created! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 1500);
+      setSuccess("OTP sent to your email! Redirecting...");
+      setTimeout(() => navigate("/verify-otp", { state: { email: form.email } }), 1500);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {

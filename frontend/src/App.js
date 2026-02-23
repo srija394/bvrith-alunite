@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyOTP from "./pages/VerifyOTP";
 import StudentDashboard from "./pages/StudentDashboard";
 import AlumniDashboard from "./pages/AlumniDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -40,6 +41,7 @@ function App() {
           <Route path="/" element={<RootRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           <Route path="/alumni/directory" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><AlumniDirectory /></ProtectedRoute>} />

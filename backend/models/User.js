@@ -15,17 +15,21 @@ const userSchema = new mongoose.Schema({
     enum: ["student", "alumni", "admin"],
     required: true
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    code: { type: String },
+    expiresAt: { type: Date }
+  },
   isApproved: {
     type: Boolean,
-    default: true  // students auto-approved; alumni can be set to false for review flow
+    default: true
   },
   isActive: {
     type: Boolean,
     default: true
-  },
-  announcement: {
-    type: String,
-    default: null
   }
 }, { timestamps: true });
 

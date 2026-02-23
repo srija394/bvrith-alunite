@@ -78,6 +78,19 @@ exports.sendRequest = async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
+    // ── Email notification to alumni ──
+    const { sendMentorshipRequestEmail } = require("../utils/emailService");
+    const User = require("../models/User");
+    const alumniUser = await User.findById(alumniUserId).select("email");
+    if (alumniUser) {
+      await sendMentorshipRequestEmail(
+        alumniUser.email,
+        studentProfile.fullName,
+        req.user.email,
+        request.matchScore || 0
+      );
+    }
+
     res.status(201).json({ message: "Mentorship request sent!", request });
   } catch (err) {
     console.error(err);
@@ -131,7 +144,7 @@ exports.respondToRequest = async (req, res) => {
     const request = await MentorshipRequest.findOne({
       _id: requestId,
       alumni: req.user.id,
-    });
+    }).populate("student", "email");
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
@@ -139,6 +152,22 @@ exports.respondToRequest = async (req, res) => {
 
     request.status = action;
     await request.save();
+
+    // ── Email notification to student ──
+    const { sendMentorshipAcceptedEmail, sendMentorshipRejectedEmail } = require("../utils/emailService");
+    const alumniProfile = await AlumniProfile.findOne({ user: req.user.id }).select("fullName");
+    if (action === "accepted") {
+      await sendMentorshipAcceptedEmail(
+        request.student.email,
+        alumniProfile?.fullName,
+        req.user.email
+      );
+    } else {
+      await sendMentorshipRejectedEmail(
+        request.student.email,
+        alumniProfile?.fullName
+      );
+    }
 
     res.json({ message: `Request ${action}`, request });
   } catch (err) {

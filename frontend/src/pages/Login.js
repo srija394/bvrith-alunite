@@ -27,7 +27,12 @@ export default function Login() {
       else if (data.role === "alumni") navigate("/dashboard/alumni");
       else navigate("/dashboard/student");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      const data = err.response?.data;
+      if (data?.needsVerification) {
+        navigate("/verify-otp", { state: { email: data.email } });
+        return;
+      }
+      setError(data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
