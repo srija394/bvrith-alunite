@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, requireApproved } = require("../middleware/authMiddleware");
 const {
   getAllPosts,
   createPost,
@@ -12,11 +12,14 @@ const {
 const router = express.Router();
 const auth = protect(["student", "alumni", "admin"]);
 
+// Read — allowed even for unapproved alumni
 router.get("/", auth, getAllPosts);
-router.post("/", auth, createPost);
 router.get("/:id", auth, getPost);
-router.post("/:id/reply", auth, addReply);
-router.delete("/:id", auth, deletePost);
-router.delete("/reply/:replyId", auth, deleteReply);
+
+// Write — alumni must be approved
+router.post("/", auth, requireApproved, createPost);
+router.post("/:id/reply", auth, requireApproved, addReply);
+router.delete("/:id", auth, requireApproved, deletePost);
+router.delete("/reply/:replyId", auth, requireApproved, deleteReply);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, requireApproved } = require("../middleware/authMiddleware");
 const {
   getAllEvents,
   getEvent,
@@ -14,19 +14,19 @@ const {
 
 const router = express.Router();
 
-// Public-ish (but need auth for isRegistered flag)
+// Public-ish (but need auth for isRegistered flag) — unapproved alumni can view events
 router.get("/", protect(["student", "alumni", "admin"]), getAllEvents);
 router.get("/my", protect(["student", "alumni"]), getMyEvents);
 router.get("/:id", protect(["student", "alumni", "admin"]), getEvent);
 
-// Create / Edit / Delete — alumni and admin only
-router.post("/", protect(["alumni", "admin"]), createEvent);
-router.put("/:id", protect(["alumni", "admin"]), updateEvent);
-router.delete("/:id", protect(["alumni", "admin"]), deleteEvent);
+// Create / Edit / Delete — alumni must be approved
+router.post("/", protect(["alumni", "admin"]), requireApproved, createEvent);
+router.put("/:id", protect(["alumni", "admin"]), requireApproved, updateEvent);
+router.delete("/:id", protect(["alumni", "admin"]), requireApproved, deleteEvent);
 
-// Register / Unregister — all logged-in users
-router.post("/:id/register", protect(["student", "alumni"]), registerForEvent);
-router.delete("/:id/register", protect(["student", "alumni"]), unregisterFromEvent);
-router.get("/:id/registrations", protect(["alumni", "admin"]), getEventRegistrations);
+// Register / Unregister — alumni must be approved
+router.post("/:id/register", protect(["student", "alumni"]), requireApproved, registerForEvent);
+router.delete("/:id/register", protect(["student", "alumni"]), requireApproved, unregisterFromEvent);
+router.get("/:id/registrations", protect(["alumni", "admin"]), requireApproved, getEventRegistrations);
 
 module.exports = router;

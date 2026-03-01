@@ -17,10 +17,12 @@ export default function AlumniDashboard() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const isApproved = user?.isApproved;
+
   const fetchStats = useCallback(() => {
     Promise.all([
       API.get("/profile/me").catch(() => null),
-      API.get("/mentorship/requests").catch(() => null),   // correct route
+      isApproved ? API.get("/mentorship/requests").catch(() => null) : Promise.resolve(null),
     ]).then(([profileRes, mentorshipRes]) => {
       const profile  = profileRes?.data?.profile;
       const requests = mentorshipRes?.data?.requests || [];
@@ -33,7 +35,7 @@ export default function AlumniDashboard() {
         totalRequests:  requests.length,
       });
     }).finally(() => setStatsLoading(false));
-  }, []);
+  }, [isApproved]);
 
   useEffect(() => {
     API.get("/admin/announcements?role=alumni")
@@ -49,17 +51,17 @@ export default function AlumniDashboard() {
 
   const STATS = [
     { icon: "🎓", label: "Graduation Year",    value: stats.graduationYear ?? "Not set" },
-    { icon: "👥", label: "Active Mentees",     value: stats.mentees },
-    { icon: "📬", label: "Pending Requests",   value: stats.pendingRequests },
-    { icon: "📊", label: "Total Requests",     value: stats.totalRequests },
+    { icon: "👥", label: "Active Mentees",     value: isApproved ? stats.mentees : "—" },
+    { icon: "📬", label: "Pending Requests",   value: isApproved ? stats.pendingRequests : "—" },
+    { icon: "📊", label: "Total Requests",     value: isApproved ? stats.totalRequests : "—" },
   ];
 
   const QUICK_LINKS = [
-    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests",            path: "/mentorship/inbox", highlight: true },
-    { icon: "💬", label: "Messages",            desc: "Chat with students you're mentoring",             path: "/messages",         highlight: true },
-    { icon: "🗓️", label: "Events",             desc: "Create and manage college events",                path: "/events" },
-    { icon: "🗨️", label: "Discussion Forum",   desc: "Answer student questions and share knowledge",    path: "/forum" },
-    { icon: "🎓", label: "Alumni Directory",    desc: "Browse and connect with fellow graduates",        path: "/alumni/directory" },
+    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests",            path: "/mentorship/inbox", highlight: true,  locked: !isApproved },
+    { icon: "💬", label: "Messages",            desc: "Chat with students you're mentoring",             path: "/messages",         highlight: true,  locked: !isApproved },
+    { icon: "🗓️", label: "Events",             desc: "Create and manage college events",                path: "/events",                             locked: !isApproved },
+    { icon: "🗨️", label: "Discussion Forum",   desc: "Answer student questions and share knowledge",    path: "/forum",                              locked: !isApproved },
+    { icon: "🎓", label: "Alumni Directory",    desc: "Browse and connect with fellow graduates",        path: "/alumni/directory",                   locked: !isApproved },
     { icon: "📁", label: "My Files",            desc: "Resume, certificates and documents",              path: "/my-files" },
   ];
 
@@ -78,6 +80,29 @@ export default function AlumniDashboard() {
             <div className="header-badge alumni-badge">Alumni Portal</div>
           </div>
         </header>
+
+        {/* Pending Approval Banner */}
+        {!isApproved && (
+          <div style={{
+            background: "#fef3c7",
+            border: "1px solid #f59e0b",
+            borderRadius: "10px",
+            padding: "1rem 1.5rem",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.75rem",
+          }}>
+            <span style={{ fontSize: "1.5rem" }}>⏳</span>
+            <div>
+              <strong style={{ color: "#92400e" }}>Account Pending Approval</strong>
+              <p style={{ margin: "0.25rem 0 0", color: "#78350f", fontSize: "0.9rem" }}>
+                Your alumni account is awaiting admin approval. Once approved, you will have full access to mentorship requests, events, directory, messages, and forum features.
+                In the meantime, you can complete your profile and upload your graduation documents to speed up the review.
+              </p>
+            </div>
+          </div>
+        )}
 
         {announcements.length > 0 && (
           <section className="announcements-preview">
@@ -110,11 +135,17 @@ export default function AlumniDashboard() {
           <h2 className="section-title">Quick Access</h2>
           <div className="links-grid">
             {QUICK_LINKS.map((l) => (
-              <div key={l.label} className={`link-card ${l.highlight ? "highlight" : ""}`} onClick={() => navigate(l.path)}>
-                <span className="link-icon">{l.icon}</span>
+              <div
+                key={l.label}
+                className={`link-card ${l.highlight ? "highlight" : ""} ${l.locked ? "locked" : ""}`}
+                onClick={() => !l.locked && navigate(l.path)}
+                style={l.locked ? { opacity: 0.5, cursor: "not-allowed", position: "relative" } : {}}
+                title={l.locked ? "Available after admin approval" : undefined}
+              >
+                <span className="link-icon">{l.locked ? "🔒" : l.icon}</span>
                 <div>
                   <div className="link-label">{l.label}</div>
-                  <div className="link-desc">{l.desc}</div>
+                  <div className="link-desc">{l.locked ? "Requires admin approval" : l.desc}</div>
                 </div>
               </div>
             ))}

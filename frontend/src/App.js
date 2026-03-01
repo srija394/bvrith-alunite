@@ -46,22 +46,22 @@ function App() {
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          <Route path="/alumni/directory" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><AlumniDirectory /></ProtectedRoute>} />
-          <Route path="/alumni/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><PublicAlumniProfile /></ProtectedRoute>} />
-          <Route path="/student/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><PublicStudentProfile /></ProtectedRoute>} />
+          <Route path="/alumni/directory" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><AlumniDirectory /></ProtectedRoute>} />
+          <Route path="/alumni/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><PublicAlumniProfile /></ProtectedRoute>} />
+          <Route path="/student/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><PublicStudentProfile /></ProtectedRoute>} />
 
           <Route path="/mentorship/find" element={<ProtectedRoute allowedRoles={["student"]}><FindMentor /></ProtectedRoute>} />
-          <Route path="/mentorship/inbox" element={<ProtectedRoute allowedRoles={["alumni"]}><MentorshipInbox /></ProtectedRoute>} />
+          <Route path="/mentorship/inbox" element={<ProtectedRoute allowedRoles={["alumni"]} requireApproval={true}><MentorshipInbox /></ProtectedRoute>} />
 
-          <Route path="/messages" element={<ProtectedRoute allowedRoles={["student","alumni"]}><MessagesInbox /></ProtectedRoute>} />
-          <Route path="/messages/:userId" element={<ProtectedRoute allowedRoles={["student","alumni"]}><MessageThread /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute allowedRoles={["student","alumni"]} requireApproval={true}><MessagesInbox /></ProtectedRoute>} />
+          <Route path="/messages/:userId" element={<ProtectedRoute allowedRoles={["student","alumni"]} requireApproval={true}><MessageThread /></ProtectedRoute>} />
 
-          <Route path="/events" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><EventsPage /></ProtectedRoute>} />
-          <Route path="/events/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><EventDetail /></ProtectedRoute>} />
+          <Route path="/events" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><EventsPage /></ProtectedRoute>} />
+          <Route path="/events/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><EventDetail /></ProtectedRoute>} />
 
           <Route path="/my-files" element={<ProtectedRoute allowedRoles={["student","alumni"]}><MyFiles /></ProtectedRoute>} />
-          <Route path="/forum" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><ForumPage /></ProtectedRoute>} />
-          <Route path="/forum/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><ForumPostPage /></ProtectedRoute>} />
+          <Route path="/forum" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><ForumPage /></ProtectedRoute>} />
+          <Route path="/forum/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]} requireApproval={true}><ForumPostPage /></ProtectedRoute>} />
 
           <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
           <Route path="/dashboard/alumni" element={<ProtectedRoute allowedRoles={["alumni"]}><AlumniDashboard /></ProtectedRoute>} />

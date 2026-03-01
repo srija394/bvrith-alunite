@@ -1,6 +1,7 @@
 const StudentProfile = require("../models/StudentProfile");
 const AlumniProfile = require("../models/AlumniProfile");
 const MentorshipRequest = require("../models/MentorshipRequest");
+const User = require("../models/User");
 const { rankMentors } = require("../utils/matchingEngine");
 
 // ─── GET recommended mentors for logged-in student ────────
@@ -14,8 +15,12 @@ exports.getRecommendations = async (req, res) => {
       });
     }
 
-    // Get all alumni profiles
-    const allAlumni = await AlumniProfile.find()
+    // Get only approved alumni user IDs
+    const approvedAlumniUsers = await User.find({ role: "alumni", isApproved: true }).select("_id");
+    const approvedIds = approvedAlumniUsers.map(u => u._id);
+
+    // Get alumni profiles for approved users only
+    const allAlumni = await AlumniProfile.find({ user: { $in: approvedIds } })
       .populate("user", "email _id");
 
     if (allAlumni.length === 0) {
@@ -71,23 +76,27 @@ exports.sendRequest = async (req, res) => {
       return res.status(400).json({ message: "Complete your profile before sending requests" });
     }
 
+    // Compute match score so it is persisted on the request record
+    // alumniProfile is already fetched above — no extra DB call needed
+    const scored = rankMentors(studentProfile, [alumniProfile], 1);
+    const matchScore = scored.length > 0 ? scored[0].matchScore : 0;
+
     // Upsert — if rejected before, allow re-request
     const request = await MentorshipRequest.findOneAndUpdate(
       { student: req.user.id, alumni: alumniUserId },
-      { status: "pending", message },
+      { status: "pending", message, matchScore },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // ── Email notification to alumni ──
     const { sendMentorshipRequestEmail } = require("../utils/emailService");
-    const User = require("../models/User");
     const alumniUser = await User.findById(alumniUserId).select("email");
     if (alumniUser) {
       await sendMentorshipRequestEmail(
         alumniUser.email,
         studentProfile.fullName,
         req.user.email,
-        request.matchScore || 0
+        matchScore
       );
     }
 

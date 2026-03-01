@@ -46,7 +46,9 @@ export default function MyFiles() {
     setError("");
 
     const formData = new FormData();
-    formData.append(type, file);
+    // The backend multer field name for graduation-doc is "graduationDoc"
+    const fieldName = type === "graduation-doc" ? "graduationDoc" : type;
+    formData.append(fieldName, file);
     if (extra.certName) formData.append("certName", extra.certName);
 
     try {

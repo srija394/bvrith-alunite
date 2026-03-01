@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, requireApproved } = require("../middleware/authMiddleware");
 const {
   sendMessage,
   getConversation,
@@ -9,10 +9,10 @@ const {
 
 const router = express.Router();
 
-// All authenticated users can message
-router.post("/send", protect(["student", "alumni"]), sendMessage);
-router.get("/inbox", protect(["student", "alumni"]), getInbox);
-router.get("/unread", protect(["student", "alumni"]), getUnreadCount);
-router.get("/conversation/:userId", protect(["student", "alumni"]), getConversation);
+// All authenticated users can message — alumni must be approved
+router.post("/send", protect(["student", "alumni"]), requireApproved, sendMessage);
+router.get("/inbox", protect(["student", "alumni"]), requireApproved, getInbox);
+router.get("/unread", protect(["student", "alumni"]), requireApproved, getUnreadCount);
+router.get("/conversation/:userId", protect(["student", "alumni"]), requireApproved, getConversation);
 
 module.exports = router;

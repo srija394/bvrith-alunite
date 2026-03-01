@@ -197,10 +197,16 @@ exports.getAllAlumni = async (req, res) => {
 // ─── GET distinct filter options (for dropdowns) ──────────
 exports.getAlumniFilterOptions = async (req, res) => {
   try {
+    const User = require("../models/User");
+    const approvedAlumniUsers = await User.find({ role: "alumni", isApproved: true }).select("_id");
+    const approvedIds = approvedAlumniUsers.map(u => u._id);
+
+    const matchFilter = { user: { $in: approvedIds } };
+
     const [branches, years, skills] = await Promise.all([
-      AlumniProfile.distinct("branch"),
-      AlumniProfile.distinct("graduationYear"),
-      AlumniProfile.distinct("skills"),
+      AlumniProfile.distinct("branch", matchFilter),
+      AlumniProfile.distinct("graduationYear", matchFilter),
+      AlumniProfile.distinct("skills", matchFilter),
     ]);
     res.json({
       branches: branches.filter(Boolean).sort(),

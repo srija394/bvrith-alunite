@@ -12,7 +12,7 @@ function parseJwt(token) {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // { token, role, email, id }
+  const [user, setUser] = useState(null); // { token, role, email, id, isApproved }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,8 +20,8 @@ export function AuthProvider({ children }) {
     const role = localStorage.getItem("role");
     const email = localStorage.getItem("email");
     if (token && role) {
-      const { id } = parseJwt(token);
-      setUser({ token, role, email, id });
+      const { id, isApproved } = parseJwt(token);
+      setUser({ token, role, email, id, isApproved: !!isApproved });
     }
     setLoading(false);
   }, []);
@@ -30,8 +30,8 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", token);
     localStorage.setItem("role", role);
     localStorage.setItem("email", email || "");
-    const { id } = parseJwt(token);
-    setUser({ token, role, email, id });
+    const { id, isApproved } = parseJwt(token);
+    setUser({ token, role, email, id, isApproved: !!isApproved });
   };
 
   const logout = () => {

@@ -396,7 +396,7 @@ function MentorshipTab() {
       <h3 className="sub-title">Recent Requests</h3>
       <div className="admin-table-wrap">
         <table className="admin-table">
-          <thead><tr><th>Student</th><th>Alumni</th><th>Match Score</th><th>Status</th><th>Date</th></tr></thead>
+          <thead><tr><th>Student</th><th>Alumni</th><th>Status</th><th>Date</th></tr></thead>
           <tbody>
             {data.recent.map((r) => (
               <tr key={r._id}>
@@ -407,12 +407,6 @@ function MentorshipTab() {
                 <td>
                   <div className="cell-name">{r.alumniName || r.alumniEmail}</div>
                   <div className="cell-email">{r.alumniName ? r.alumniEmail : ""}</div>
-                </td>
-                <td>
-                  <div className="match-score-bar">
-                    <div className="match-score-fill" style={{ width: `${Math.round((r.matchScore ?? 0) * 100)}%` }} />
-                    <span>{Math.round((r.matchScore ?? 0) * 100)}%</span>
-                  </div>
                 </td>
                 <td>
                   <span className="status-pill" style={{ background: STATUS_COLOR[r.status] + "22", color: STATUS_COLOR[r.status] }}>
