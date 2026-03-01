@@ -183,3 +183,25 @@ exports.sendAlumniRejectedEmail = async (to) => {
   `);
   await sendEmail(to, "BVRITH Alunite — Alumni Profile Not Approved", html);
 };
+
+// 10. Notify admin when a new event is created
+exports.sendEventCreatedAdminEmail = async (adminEmail, event, creatorEmail) => {
+  const html = wrap("New Event Created", `
+    <p>A new event has been published on <strong>BVRITH Alunite</strong>.</p>
+    <div class="highlight-box">
+      <strong>📅 ${event.title}</strong><br/><br/>
+      <strong>Date:</strong> ${new Date(event.date).toLocaleDateString("en-IN", {weekday:"long",day:"numeric",month:"long",year:"numeric"})}<br/>
+      <strong>Time:</strong> ${event.time}<br/>
+      <strong>Venue:</strong> ${event.venue}<br/>
+      <strong>Mode:</strong> ${event.mode}<br/>
+      <strong>Category:</strong> ${event.category}<br/>
+      <strong>Created by:</strong> ${creatorEmail}
+    </div>
+    <p>Log in to the Admin Panel → Events tab to manage registrations.</p>
+  `);
+  await sendEmail(
+  adminEmail,
+  `📅 New Event: ${event.title} — BVRITH Alunite`,
+  html
+);
+};

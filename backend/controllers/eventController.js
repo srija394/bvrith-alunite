@@ -66,6 +66,15 @@ exports.createEvent = async (req, res) => {
       createdBy: req.user.id,
     });
 
+    // Notify all admins
+    const User = require("../models/User");
+    const { sendEventCreatedAdminEmail } = require("../utils/emailService");
+    const creator = await User.findById(req.user.id).select("email");
+    const admins  = await User.find({ role: "admin" }).select("email");
+    for (const admin of admins) {
+      await sendEventCreatedAdminEmail(admin.email, event, creator?.email).catch(() => {});
+    }
+
     res.status(201).json({ message: "Event created", event });
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -189,6 +198,47 @@ exports.getMyEvents = async (req, res) => {
 
     res.json({ events });
   } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── GET registrations for an event (creator or admin) ───
+exports.getEventRegistrations = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id)
+      .populate("registrations.user", "email role")
+      .populate("createdBy", "_id email");
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    const isCreator = event.createdBy._id.toString() === req.user.id;
+    const isAdmin   = req.user.role === "admin";
+    if (!isCreator && !isAdmin) return res.status(403).json({ message: "Not authorized" });
+
+    const StudentProfile = require("../models/StudentProfile");
+    const AlumniProfile  = require("../models/AlumniProfile");
+
+    const registrants = await Promise.all(event.registrations.map(async (r) => {
+      const u = r.user;
+      if (!u) return null;
+      const profile = u.role === "student"
+        ? await StudentProfile.findOne({ user: u._id }).select("fullName branch year")
+        : await AlumniProfile.findOne({ user: u._id }).select("fullName branch graduationYear");
+      return {
+        userId: u._id, email: u.email, role: u.role,
+        name: profile?.fullName || u.email,
+        details: profile,
+        registeredAt: r.registeredAt,
+      };
+    }));
+
+    res.json({
+      eventTitle: event.title,
+      eventDate: event.date,
+      total: registrants.filter(Boolean).length,
+      registrants: registrants.filter(Boolean),
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

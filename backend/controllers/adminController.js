@@ -254,3 +254,99 @@ exports.rejectAlumni = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// ─── GET alumni profile for admin review (with signed S3 URLs) ─
+exports.getAlumniProfileForReview = async (req, res) => {
+  try {
+    const { GetObjectCommand } = require("@aws-sdk/client-s3");
+    const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+    const s3 = require("../config/s3");
+    const sign = async (key) => {
+      if (!key) return null;
+      return getSignedUrl(s3, new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key }), { expiresIn: 3600 });
+    };
+
+    const user    = await User.findById(req.params.userId).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const profile = await AlumniProfile.findOne({ user: user._id });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    const certs = await Promise.all((profile.certificates || []).map(async (c) => ({
+      key: c.key, name: c.name, originalName: c.originalName, uploadedAt: c.uploadedAt,
+      url: await sign(c.key),
+    })));
+
+    res.json({
+      user: { _id: user._id, email: user.email, isApproved: user.isApproved, createdAt: user.createdAt },
+      profile: {
+        fullName: profile.fullName,
+        rollNumber: profile.rollNumber,
+        branch: profile.branch,
+        graduationYear: profile.graduationYear,
+        phone: profile.phone,
+        linkedIn: profile.linkedIn,
+        currentCompany: profile.currentCompany,
+        currentRole: profile.currentRole,
+        location: profile.location,
+        skills: profile.skills,
+        bio: profile.bio,
+        isAvailableForMentorship: profile.isAvailableForMentorship,
+        photoUrl:          await sign(profile.photoKey),
+        resumeUrl:         await sign(profile.resumeKey),
+        resumeName:        profile.resumeName,
+        graduationDocUrl:  await sign(profile.graduationDocKey),
+        graduationDocName: profile.graduationDocName,
+        certificates: certs,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── GET all event registrations (admin view) ─────────────
+exports.getEventRegistrations = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.eventId)
+      .populate("registrations.user", "email role")
+      .populate("createdBy", "email");
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    const registrants = await Promise.all(event.registrations.map(async (r) => {
+      const u = r.user;
+      if (!u) return null;
+      const profile = u.role === "student"
+        ? await StudentProfile.findOne({ user: u._id }).select("fullName branch year")
+        : await AlumniProfile.findOne({ user: u._id }).select("fullName branch graduationYear");
+      return {
+        userId: u._id, email: u.email, role: u.role,
+        name: profile?.fullName || u.email,
+        details: profile,
+        registeredAt: r.registeredAt,
+      };
+    }));
+
+    res.json({
+      eventTitle: event.title,
+      eventDate: event.date,
+      createdBy: event.createdBy?.email,
+      total: registrants.filter(Boolean).length,
+      registrants: registrants.filter(Boolean),
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── GET all events (admin overview) ─────────────────────
+exports.getAllEventsAdmin = async (req, res) => {
+  try {
+    const events = await Event.find()
+      .populate("createdBy", "email role")
+      .sort({ createdAt: -1 });
+    res.json({ events });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};

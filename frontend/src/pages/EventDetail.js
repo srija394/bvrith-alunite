@@ -18,6 +18,9 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState("");
+  const [registrants, setRegistrants] = useState(null);
+  const [regsLoading, setRegsLoading] = useState(false);
+  const [showRegs, setShowRegs] = useState(false);
 
   useEffect(() => {
     API.get(`/events/${id}`)
@@ -50,6 +53,21 @@ export default function EventDetail() {
       navigate("/events");
     } catch {
       alert("Failed to delete event");
+    }
+  };
+
+  const handleViewRegistrants = async () => {
+    if (showRegs) { setShowRegs(false); return; }
+    if (registrants) { setShowRegs(true); return; }
+    setRegsLoading(true);
+    try {
+      const { data } = await API.get(`/events/${id}/registrations`);
+      setRegistrants(data);
+      setShowRegs(true);
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to load registrants");
+    } finally {
+      setRegsLoading(false);
     }
   };
 
@@ -175,9 +193,68 @@ export default function EventDetail() {
                   🗑️ Delete Event
                 </button>
               )}
+
+              {canManage && (
+                <button
+                  className="btn-view-regs"
+                  onClick={handleViewRegistrants}
+                  disabled={regsLoading}
+                >
+                  {regsLoading
+                    ? "Loading..."
+                    : showRegs
+                    ? "▲ Hide Registrants"
+                    : `👥 View Registrants (${event.registrationCount ?? 0})`}
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {/* ── Registrants Panel (creator + admin) ── */}
+        {canManage && showRegs && (
+          <div className="event-regs-panel">
+            <div className="regs-panel-header">
+              <h2>👥 Registered Members</h2>
+              {registrants && (
+                <span className="regs-count-badge">{registrants.total} registered</span>
+              )}
+            </div>
+
+            {!registrants ? (
+              <div className="regs-loading">Loading...</div>
+            ) : registrants.total === 0 ? (
+              <p className="regs-empty">No one has registered for this event yet.</p>
+            ) : (
+              <div className="regs-table-wrap">
+                <table className="regs-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Registered On</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {registrants.registrants.map((r, i) => (
+                      <tr key={r.userId}>
+                        <td>{i + 1}</td>
+                        <td>{r.name || "—"}</td>
+                        <td>{r.email}</td>
+                        <td>
+                          <span className={`regs-role-badge regs-${r.role}`}>{r.role}</span>
+                        </td>
+                        <td>{new Date(r.registeredAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

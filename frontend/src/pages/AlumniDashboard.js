@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -15,43 +15,52 @@ export default function AlumniDashboard() {
     pendingRequests: 0,
     totalRequests: 0,
   });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const fetchStats = useCallback(() => {
+    Promise.all([
+      API.get("/profile/me").catch(() => null),
+      API.get("/mentorship/requests").catch(() => null),   // correct route
+    ]).then(([profileRes, mentorshipRes]) => {
+      const profile  = profileRes?.data?.profile;
+      const requests = mentorshipRes?.data?.requests || [];
+      const accepted = requests.filter((r) => r.status === "accepted").length;
+      const pending  = requests.filter((r) => r.status === "pending").length;
+      setStats({
+        graduationYear: profile?.graduationYear ?? null,
+        mentees:        accepted,
+        pendingRequests: pending,
+        totalRequests:  requests.length,
+      });
+    }).finally(() => setStatsLoading(false));
+  }, []);
 
   useEffect(() => {
     API.get("/admin/announcements?role=alumni")
       .then((r) => setAnnouncements(r.data.announcements.slice(0, 3)))
       .catch(() => {});
 
-    Promise.all([
-      API.get("/profile/me").catch(() => null),
-      API.get("/mentorship/my-requests").catch(() => null),
-    ]).then(([profileRes, mentorshipRes]) => {
-      const profile = profileRes?.data?.profile;
-      const requests = mentorshipRes?.data?.requests || [];
-      const accepted = requests.filter((r) => r.status === "accepted").length;
-      const pending = requests.filter((r) => r.status === "pending").length;
-      setStats({
-        graduationYear: profile?.graduationYear ?? null,
-        mentees: accepted,
-        pendingRequests: pending,
-        totalRequests: requests.length,
-      });
-    });
-  }, []);
+    fetchStats();
+
+    // Poll every 30 seconds for real-time updates
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
 
   const STATS = [
-    { icon: "🎓", label: "Graduation Year", value: stats.graduationYear ?? "Not set" },
-    { icon: "👥", label: "Active Mentees", value: stats.mentees },
-    { icon: "📬", label: "Pending Requests", value: stats.pendingRequests },
-    { icon: "📊", label: "Total Requests", value: stats.totalRequests },
+    { icon: "🎓", label: "Graduation Year",    value: stats.graduationYear ?? "Not set" },
+    { icon: "👥", label: "Active Mentees",     value: stats.mentees },
+    { icon: "📬", label: "Pending Requests",   value: stats.pendingRequests },
+    { icon: "📊", label: "Total Requests",     value: stats.totalRequests },
   ];
 
   const QUICK_LINKS = [
-    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests", path: "/mentorship/inbox", highlight: true },
-    { icon: "💬", label: "Messages", desc: "Chat with students you're mentoring", path: "/messages", highlight: true },
-    { icon: "🗓️", label: "Events", desc: "Create and manage college events", path: "/events" },
-    { icon: "🗨️", label: "Discussion Forum", desc: "Answer student questions and share knowledge", path: "/forum" },
-    { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
-    { icon: "📁", label: "My Files", desc: "Resume, certificates and documents", path: "/my-files" },
+    { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests",            path: "/mentorship/inbox", highlight: true },
+    { icon: "💬", label: "Messages",            desc: "Chat with students you're mentoring",             path: "/messages",         highlight: true },
+    { icon: "🗓️", label: "Events",             desc: "Create and manage college events",                path: "/events" },
+    { icon: "🗨️", label: "Discussion Forum",   desc: "Answer student questions and share knowledge",    path: "/forum" },
+    { icon: "🎓", label: "Alumni Directory",    desc: "Browse and connect with fellow graduates",        path: "/alumni/directory" },
+    { icon: "📁", label: "My Files",            desc: "Resume, certificates and documents",              path: "/my-files" },
   ];
 
   return (
@@ -64,6 +73,7 @@ export default function AlumniDashboard() {
             <p>{user?.email} &mdash; Stay connected with BVRITH.</p>
           </div>
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <button className="header-profile-btn" onClick={fetchStats} title="Refresh stats">🔄</button>
             <button className="header-profile-btn" onClick={() => navigate("/profile/view")}>👤 My Profile</button>
             <div className="header-badge alumni-badge">Alumni Portal</div>
           </div>
@@ -87,7 +97,9 @@ export default function AlumniDashboard() {
             <div key={s.label} className="stat-card">
               <span className="stat-icon">{s.icon}</span>
               <div>
-                <div className="stat-value">{s.value}</div>
+                <div className="stat-value">
+                  {statsLoading ? <span className="stat-loading">…</span> : s.value}
+                </div>
                 <div className="stat-label">{s.label}</div>
               </div>
             </div>
@@ -98,11 +110,7 @@ export default function AlumniDashboard() {
           <h2 className="section-title">Quick Access</h2>
           <div className="links-grid">
             {QUICK_LINKS.map((l) => (
-              <div
-                key={l.label}
-                className={`link-card ${l.highlight ? "highlight" : ""}`}
-                onClick={() => navigate(l.path)}
-              >
+              <div key={l.label} className={`link-card ${l.highlight ? "highlight" : ""}`} onClick={() => navigate(l.path)}>
                 <span className="link-icon">{l.icon}</span>
                 <div>
                   <div className="link-label">{l.label}</div>

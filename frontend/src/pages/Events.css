@@ -531,3 +531,88 @@
   .form-row.two-col { grid-template-columns: 1fr; }
   .events-grid { grid-template-columns: 1fr; }
 }
+
+/* ── EventDetail: Registrants Panel ─────────────────────── */
+.btn-view-regs {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: #eef2ff;
+  color: #0f3460;
+  border: 2px solid #c7d2fe;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-view-regs:hover:not(:disabled) {
+  background: #0f3460;
+  color: #fff;
+  border-color: #0f3460;
+}
+.btn-view-regs:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.event-regs-panel {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(15,52,96,0.09);
+}
+
+.regs-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.regs-panel-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #0f3460;
+}
+.regs-count-badge {
+  background: #0f3460;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.15rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.regs-loading { color: #aaa; font-size: 0.9rem; }
+.regs-empty   { color: #888; font-size: 0.9rem; }
+
+.regs-table-wrap { overflow-x: auto; }
+.regs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.regs-table th {
+  background: #0f3460;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+.regs-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+.regs-table tr:last-child td { border-bottom: none; }
+.regs-table tr:hover td { background: #f8f9ff; }
+
+.regs-role-badge {
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.regs-student { background: #dbeafe; color: #1d4ed8; }
+.regs-alumni  { background: #dcfce7; color: #15803d; }
+.regs-admin   { background: #fee2e2; color: #dc2626; }

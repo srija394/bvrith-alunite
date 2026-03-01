@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 import "./MyFiles.css";
 
 export default function MyFiles() {
   const navigate = useNavigate();
-  const [files, setFiles] = useState({ resume: null, photo: null, certificates: [] });
+  const { user } = useAuth();
+  const [files, setFiles] = useState({ resume: null, photo: null, certificates: [], graduationDoc: null });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState({}); // { resume: bool, certificate: bool, photo: bool }
   const [certName, setCertName] = useState("");
@@ -16,6 +18,7 @@ export default function MyFiles() {
   const resumeRef = useRef();
   const certRef = useRef();
   const photoRef = useRef();
+  const gradDocRef = useRef();
 
   useEffect(() => {
     fetchFiles();
@@ -51,7 +54,10 @@ export default function MyFiles() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (type === "resume") {
+      if (type === "graduation-doc") {
+        setFiles((f) => ({ ...f, graduationDoc: { name: data.fileName, url: data.url } }));
+        showSuccess("Graduation document uploaded! Admin will review it during approval.");
+      } else if (type === "resume") {
         setFiles((f) => ({ ...f, resume: { name: data.fileName, url: data.url } }));
         showSuccess("Resume uploaded successfully!");
       } else if (type === "certificate") {
@@ -240,6 +246,57 @@ export default function MyFiles() {
                 </button>
               </div>
             </div>
+
+            {/* ── Graduation Document (Alumni only) ── */}
+            {user?.role === "alumni" && (
+              <div className="file-card grad-doc-card">
+                <div className="file-card-header">
+                  <span className="file-icon">🎓</span>
+                  <div>
+                    <h3>Graduation Document</h3>
+                    <p>Marksheet or Degree Certificate · PDF/Image · Max 10MB</p>
+                  </div>
+                </div>
+
+                <div className="grad-doc-notice">
+                  ℹ️ Required for admin approval. Upload your college marksheet or graduation certificate.
+                </div>
+
+                {files.graduationDoc && (
+                  <div className="file-existing">
+                    <span className="file-name-icon">📎</span>
+                    <div>
+                      <p className="file-name">{files.graduationDoc.name}</p>
+                      <a href={files.graduationDoc.url} target="_blank" rel="noreferrer" className="file-view-link">
+                        View / Download
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <input
+                  ref={gradDocRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    handleUpload("graduation-doc", e.target.files[0]);
+                    gradDocRef.current.value = "";
+                  }}
+                />
+                <button
+                  className="btn-upload btn-upload-grad"
+                  disabled={uploading["graduation-doc"]}
+                  onClick={() => gradDocRef.current.click()}
+                >
+                  {uploading["graduation-doc"]
+                    ? "Uploading..."
+                    : files.graduationDoc
+                    ? "Replace Document"
+                    : "Upload Graduation Document"}
+                </button>
+              </div>
+            )}
 
           </div>
         )}

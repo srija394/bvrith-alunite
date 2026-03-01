@@ -4,12 +4,14 @@ const {
   uploadResume,
   uploadCertificate,
   uploadPhoto,
+  uploadGraduationDoc,
   handleUploadError,
 } = require("../middleware/uploadMiddleware");
 const {
   uploadResume: handleResume,
   uploadCertificate: handleCertificate,
   uploadPhoto: handlePhoto,
+  uploadGraduationDoc: handleGradDoc,
   getMyFiles,
   deleteCertificate,
 } = require("../controllers/uploadController");
@@ -47,5 +49,13 @@ router.get("/my-files", auth, getMyFiles);
 
 // Delete a certificate by key
 router.delete("/certificate/:key", auth, deleteCertificate);
+
+// Graduation document — alumni only
+router.post(
+  "/graduation-doc",
+  protect(["alumni"]),
+  (req, res, next) => uploadGraduationDoc.single("graduationDoc")(req, res, (err) => handleUploadError(err, req, res, next)),
+  handleGradDoc
+);
 
 module.exports = router;

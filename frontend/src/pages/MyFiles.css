@@ -263,3 +263,27 @@
 
 .s3-info-box span { font-size: 1.2rem; flex-shrink: 0; }
 .s3-info-box p { margin: 0; }
+
+/* ── Graduation Document Card ────────────────────────────── */
+.grad-doc-card {
+  border: 2px dashed #c7d2fe;
+  background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+}
+
+.grad-doc-notice {
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  color: #92400e;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.btn-upload-grad {
+  background: linear-gradient(90deg, #0f3460, #7c3aed) !important;
+}
+.btn-upload-grad:hover:not(:disabled) {
+  background: linear-gradient(90deg, #7c3aed, #0f3460) !important;
+}

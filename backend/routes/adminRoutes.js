@@ -8,6 +8,9 @@ const {
   changeRole,
   deleteUser,
   rejectAlumni,
+  getAlumniProfileForReview,
+  getAllEventsAdmin,
+  getEventRegistrations,
   getMentorshipStats,
   postAnnouncement,
   getAnnouncements,
@@ -28,6 +31,11 @@ router.patch("/users/:userId/toggle-active", adminOnly, toggleUserActive);
 router.patch("/users/:userId/role", adminOnly, changeRole);
 router.delete("/users/:userId", adminOnly, deleteUser);
 router.delete("/users/:userId/reject", adminOnly, rejectAlumni);
+router.get("/users/:userId/alumni-profile", adminOnly, getAlumniProfileForReview);
+
+// Events admin
+router.get("/events", adminOnly, getAllEventsAdmin);
+router.get("/events/:eventId/registrations", adminOnly, getEventRegistrations);
 
 // Mentorship stats
 router.get("/mentorship-stats", adminOnly, getMentorshipStats);

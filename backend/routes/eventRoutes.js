@@ -9,6 +9,7 @@ const {
   registerForEvent,
   unregisterFromEvent,
   getMyEvents,
+  getEventRegistrations,
 } = require("../controllers/eventController");
 
 const router = express.Router();
@@ -26,5 +27,6 @@ router.delete("/:id", protect(["alumni", "admin"]), deleteEvent);
 // Register / Unregister — all logged-in users
 router.post("/:id/register", protect(["student", "alumni"]), registerForEvent);
 router.delete("/:id/register", protect(["student", "alumni"]), unregisterFromEvent);
+router.get("/:id/registrations", protect(["alumni", "admin"]), getEventRegistrations);
 
 module.exports = router;

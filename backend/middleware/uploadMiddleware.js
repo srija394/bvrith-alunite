@@ -41,7 +41,8 @@ function makeUploader(folder, allowedExts, maxMB = 5) {
 // ── Named uploaders ───────────────────────────────────────
 const uploadResume      = makeUploader("resumes",      ALLOWED.resume,      5);
 const uploadCertificate = makeUploader("certificates", ALLOWED.certificate, 10);
-const uploadPhoto       = makeUploader("photos",       ALLOWED.photo,        3);
+const uploadPhoto         = makeUploader("photos",        ALLOWED.photo,        3);
+const uploadGraduationDoc = makeUploader("graduation_docs", ALLOWED.certificate, 10);
 
 // ── Error handler middleware ──────────────────────────────
 function handleUploadError(err, req, res, next) {
@@ -57,4 +58,4 @@ function handleUploadError(err, req, res, next) {
   next();
 }
 
-module.exports = { uploadResume, uploadCertificate, uploadPhoto, handleUploadError };
+module.exports = { uploadResume, uploadCertificate, uploadPhoto, uploadGraduationDoc, handleUploadError };

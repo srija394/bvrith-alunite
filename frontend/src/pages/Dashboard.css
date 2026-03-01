@@ -211,3 +211,10 @@ body {
 }
 
 .pin-dot { font-size: 0.85rem; }
+
+.stat-loading {
+  display: inline-block;
+  color: #ccc;
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }

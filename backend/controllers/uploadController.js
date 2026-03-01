@@ -171,3 +171,25 @@ exports.deleteCertificate = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// ─── POST /api/upload/graduation-doc (alumni only) ────────
+exports.uploadGraduationDoc = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    if (req.user.role !== "alumni") return res.status(403).json({ message: "Alumni only" });
+
+    const profile = await AlumniProfile.findOne({ user: req.user.id });
+    if (!profile) return res.status(404).json({ message: "Create your profile first" });
+
+    if (profile.graduationDocKey) await deleteS3Object(profile.graduationDocKey);
+    profile.graduationDocKey  = req.file.key;
+    profile.graduationDocName = req.file.originalname;
+    await profile.save();
+
+    const url = await signedUrl(req.file.key);
+    res.json({ message: "Graduation document uploaded", url, fileName: req.file.originalname });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Upload failed" });
+  }
+};
