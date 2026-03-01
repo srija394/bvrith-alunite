@@ -173,3 +173,13 @@ exports.sendMessageNotificationEmail = async (to, senderName) => {
   `);
   await sendEmail(to, `💬 New message from ${senderName} - BVRITH Alunite`, html);
 };
+
+// 9. Alumni profile rejected
+exports.sendAlumniRejectedEmail = async (to) => {
+  const html = wrap("Profile Not Approved", `
+    <p>Hi,</p>
+    <p>Unfortunately your alumni profile on <strong>BVRITH Alunite</strong> was not approved by the admin.</p>
+    <p>Your account data has been removed. If you believe this is a mistake, please contact the institution's IT department directly.</p>
+  `);
+  await sendEmail(to, "BVRITH Alunite — Alumni Profile Not Approved", html);
+};

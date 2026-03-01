@@ -88,9 +88,13 @@ exports.getPost = async (req, res) => {
     const post = await ForumPost.findById(req.params.id).populate("postedBy", "email role");
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    // Increment views
-    post.views += 1;
-    await post.save();
+    // Increment views only if user hasn't viewed before (unique views)
+    const userId = req.user.id;
+    if (!post.viewedBy.includes(userId)) {
+      post.viewedBy.push(userId);
+      post.views += 1;
+      await post.save();
+    }
 
     const replies = await ForumReply.find({ post: post._id })
       .populate("postedBy", "email role")

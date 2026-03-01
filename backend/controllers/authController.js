@@ -17,8 +17,17 @@ exports.register = async (req, res) => {
     if (!email || !password || !role)
       return res.status(400).json({ message: "All fields required" });
 
-    if (!["student", "alumni"].includes(role))
-      return res.status(400).json({ message: "Invalid role" });
+    if (!["student", "alumni", "admin"].includes(role))
+    return res.status(400).json({ message: "Invalid role" });
+
+    // Admin registration requires secret code
+    if (role === "admin") {
+      const { adminCode } = req.body;
+      const validCode = process.env.ADMIN_SECRET_CODE || "BVRITH@Admin2025";
+      if (!adminCode || adminCode !== validCode) {
+        return res.status(403).json({ message: "Invalid admin secret code" });
+      }
+    }
 
     if (password.length < 6)
       return res.status(400).json({ message: "Password must be 6+ chars" });
@@ -37,6 +46,7 @@ exports.register = async (req, res) => {
       // Resend OTP to existing unverified account
       existing.password = hashedPassword;
       existing.role = role;
+      existing.isApproved = role !== "alumni"; // alumni need admin approval
       existing.otp = { code: otp, expiresAt: otpExpiresAt };
       await existing.save();
     } else {
@@ -45,6 +55,7 @@ exports.register = async (req, res) => {
         password: hashedPassword,
         role,
         isEmailVerified: false,
+        isApproved: role !== "alumni", // alumni start as unapproved
         otp: { code: otp, expiresAt: otpExpiresAt },
       });
     }

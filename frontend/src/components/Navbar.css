@@ -66,3 +66,16 @@
   background: #e94560;
   color: #fff;
 }
+
+.btn-dashboard {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  color: #fff;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-dashboard:hover { background: rgba(255,255,255,0.12); }

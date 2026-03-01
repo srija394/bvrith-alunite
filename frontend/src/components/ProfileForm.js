@@ -21,6 +21,7 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     // student only
     year: "",
     section: "",
+    cgpa: "",
     // alumni only
     graduationYear: "",
     currentCompany: "",
@@ -85,6 +86,14 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
             <div className="form-group">
               <label>Section</label>
               <input name="section" value={form.section} onChange={handleChange} placeholder="e.g. A" />
+            </div>
+            <div className="form-group">
+              <label>CGPA</label>
+              <input type="number" name="cgpa" value={form.cgpa} onChange={handleChange} step="0.1" min="0" max="10" placeholder="e.g. 8.5" />
+            </div>
+            <div className="form-group">
+              <label>Expected Graduation Year</label>
+              <input type="number" name="graduationYear" value={form.graduationYear} onChange={handleChange} placeholder="e.g. 2026" min="2020" max="2035" />
             </div>
           </>
         )}

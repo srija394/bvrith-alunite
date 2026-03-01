@@ -1,0 +1,309 @@
+/* ─── Page wrapper ───────────────────────────────────────── */
+.otp-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 1.5rem;
+}
+
+/* ─── Card ───────────────────────────────────────────────── */
+.otp-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ─── Brand ──────────────────────────────────────────────── */
+.otp-brand {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.otp-brand-icon {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.otp-brand h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f3460;
+  margin: 0 0 0.15rem;
+}
+
+.otp-brand p {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 0;
+}
+
+/* ─── Title block ────────────────────────────────────────── */
+.otp-title-block {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.otp-shield {
+  font-size: 2.5rem;
+  margin-bottom: 0.65rem;
+  display: block;
+}
+
+.otp-title-block h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 0.5rem;
+}
+
+.otp-desc {
+  font-size: 0.88rem;
+  color: #888;
+  margin: 0 0 0.6rem;
+}
+
+.otp-email-pill {
+  display: inline-block;
+  background: #f0f4ff;
+  border: 1.5px solid #c7d2fe;
+  color: #0f3460;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  word-break: break-all;
+}
+
+/* ─── Alerts ─────────────────────────────────────────────── */
+.otp-alert {
+  width: 100%;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.otp-alert.error {
+  background: #fff0f0;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.otp-alert.success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+/* ─── OTP digit boxes ────────────────────────────────────── */
+.otp-boxes {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+
+.otp-digit {
+  width: 52px;
+  height: 60px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.1s;
+  caret-color: transparent;
+}
+
+.otp-digit:focus {
+  border-color: #0f3460;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(15, 52, 96, 0.1);
+  transform: scale(1.06);
+}
+
+.otp-digit.has-value {
+  border-color: #0f3460;
+  background: #eef2ff;
+  color: #0f3460;
+}
+
+.otp-digit.has-error {
+  border-color: #dc2626;
+  background: #fff5f5;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ─── Progress dots ──────────────────────────────────────── */
+.otp-progress {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.otp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.otp-dot.filled {
+  background: #0f3460;
+  transform: scale(1.2);
+}
+
+/* ─── Verify button ──────────────────────────────────────── */
+.otp-btn-verify {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(90deg, #0f3460, #e94560);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  margin-bottom: 0.6rem;
+}
+
+.otp-btn-verify:not(:disabled):hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.otp-btn-verify:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Expiry note ────────────────────────────────────────── */
+.otp-expiry {
+  font-size: 0.75rem;
+  color: #bbb;
+  margin: 0 0 1.25rem;
+  text-align: center;
+}
+
+/* ─── Resend block ───────────────────────────────────────── */
+.otp-resend-block {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.otp-countdown {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.otp-countdown-bar {
+  width: 180px;
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  overflow: hidden;
+  display: block;
+}
+
+.otp-countdown-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0f3460, #e94560);
+  border-radius: 20px;
+  transition: width 1s linear;
+}
+
+.otp-btn-resend {
+  background: transparent;
+  border: 1.5px solid #0f3460;
+  color: #0f3460;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.otp-btn-resend:hover:not(:disabled) {
+  background: #0f3460;
+  color: #fff;
+}
+
+.otp-btn-resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Back button ────────────────────────────────────────── */
+.otp-btn-back {
+  background: transparent;
+  border: none;
+  color: #bbb;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.otp-btn-back:hover { color: #555; }
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .otp-card { padding: 2rem 1.25rem; }
+  .otp-digit { width: 44px; height: 52px; font-size: 1.3rem; border-radius: 10px; }
+  .otp-boxes { gap: 0.45rem; }
+}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../utils/api";
-import "./Auth.css";
+import "./VerifyOTP.css";
 
 export default function VerifyOTP() {
   const location = useLocation();
@@ -17,29 +17,21 @@ export default function VerifyOTP() {
 
   const inputRefs = useRef([]);
 
-  // Countdown timer for resend
   useEffect(() => {
     if (!email) { navigate("/register"); return; }
     const timer = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) { clearInterval(timer); return 0; }
-        return c - 1;
-      });
+      setCountdown((c) => { if (c <= 1) { clearInterval(timer); return 0; } return c - 1; });
     }, 1000);
     return () => clearInterval(timer);
   }, [email]);
 
   const handleChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return; // only digits
+    if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // only last char
+    newOtp[index] = value.slice(-1);
     setOtp(newOtp);
     setError("");
-
-    // Auto-advance to next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (index, e) => {
@@ -51,7 +43,7 @@ export default function VerifyOTP() {
   const handlePaste = (e) => {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    const newOtp = [...otp];
+    const newOtp = ["", "", "", "", "", ""];
     pasted.split("").forEach((char, i) => { newOtp[i] = char; });
     setOtp(newOtp);
     inputRefs.current[Math.min(pasted.length, 5)]?.focus();
@@ -61,54 +53,62 @@ export default function VerifyOTP() {
     e.preventDefault();
     const code = otp.join("");
     if (code.length !== 6) { setError("Please enter all 6 digits"); return; }
-
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     try {
       await API.post("/auth/verify-otp", { email, otp: code });
-      setSuccess("Email verified! Redirecting to login...");
+      setSuccess("Email verified successfully! Redirecting to login...");
       setTimeout(() => navigate("/login", { state: { verified: true } }), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Verification failed");
-    } finally {
-      setLoading(false);
-    }
+      setError(err.response?.data?.message || "Verification failed. Please try again.");
+    } finally { setLoading(false); }
   };
 
   const handleResend = async () => {
-    setResending(true);
-    setError("");
+    setResending(true); setError("");
     try {
       await API.post("/auth/resend-otp", { email });
-      setSuccess("New OTP sent to your email!");
+      setSuccess("New OTP sent! Check your inbox.");
       setCountdown(60);
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to resend OTP");
-    } finally {
-      setResending(false);
-    }
+      setError(err.response?.data?.message || "Failed to resend. Try again.");
+    } finally { setResending(false); }
   };
 
   if (!email) return null;
 
+  const filled = otp.filter(Boolean).length;
+
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-logo">🎓</div>
-        <h2>Verify Your Email</h2>
-        <p className="auth-subtitle">
-          We sent a 6-digit OTP to<br />
-          <strong>{email}</strong>
-        </p>
+    <div className="otp-wrapper">
+      <div className="otp-card">
 
-        {error && <div className="auth-error">{error}</div>}
-        {success && <div className="auth-success">{success}</div>}
+        {/* Brand */}
+        <div className="otp-brand">
+          <span className="otp-brand-icon">🎓</span>
+          <h1>BVRITH Alunite</h1>
+          <p>Alumni &amp; Student Portal</p>
+        </div>
 
+        {/* Title */}
+        <div className="otp-title-block">
+          <div className="otp-shield">✉️</div>
+          <h2>Verify Your Email</h2>
+          <p className="otp-desc">
+            We sent a 6-digit OTP to
+          </p>
+          <div className="otp-email-pill">{email}</div>
+        </div>
+
+        {/* Alerts */}
+        {error   && <div className="otp-alert error">⚠️ {error}</div>}
+        {success && <div className="otp-alert success">✅ {success}</div>}
+
+        {/* OTP Boxes */}
         <form onSubmit={handleVerify}>
-          <div className="otp-inputs" onPaste={handlePaste}>
+          <div className="otp-boxes" onPaste={handlePaste}>
             {otp.map((digit, i) => (
               <input
                 key={i}
@@ -119,34 +119,57 @@ export default function VerifyOTP() {
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className={`otp-box ${digit ? "filled" : ""}`}
+                className={`otp-digit ${digit ? "has-value" : ""} ${error ? "has-error" : ""}`}
                 autoFocus={i === 0}
+                autoComplete="off"
               />
             ))}
           </div>
 
-          <button type="submit" className="auth-btn" disabled={loading || !!success}>
-            {loading ? "Verifying..." : "Verify Email"}
+          {/* Progress dots */}
+          <div className="otp-progress">
+            {otp.map((d, i) => (
+              <div key={i} className={`otp-dot ${d ? "filled" : ""}`} />
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            className="otp-btn-verify"
+            disabled={loading || filled < 6 || !!success}
+          >
+            {loading ? (
+              <span className="btn-spinner-wrap"><span className="btn-spinner" /> Verifying...</span>
+            ) : (
+              `Verify Email ${filled < 6 ? `(${filled}/6)` : "✓"}`
+            )}
           </button>
         </form>
 
-        <div className="otp-resend">
+        {/* Expiry note */}
+        <p className="otp-expiry">OTP expires in 10 minutes</p>
+
+        {/* Resend */}
+        <div className="otp-resend-block">
           {countdown > 0 ? (
-            <p>Resend OTP in <strong>{countdown}s</strong></p>
+            <p className="otp-countdown">
+              Didn't receive it? Resend in <strong>{countdown}s</strong>
+              <span className="otp-countdown-bar">
+                <span className="otp-countdown-fill" style={{ width: `${(countdown / 60) * 100}%` }} />
+              </span>
+            </p>
           ) : (
-            <button
-              className="btn-resend"
-              onClick={handleResend}
-              disabled={resending}
-            >
-              {resending ? "Sending..." : "Resend OTP"}
+            <button className="otp-btn-resend" onClick={handleResend} disabled={resending}>
+              {resending ? "Sending..." : "🔁 Resend OTP"}
             </button>
           )}
         </div>
 
-        <button className="btn-back-link" onClick={() => navigate("/register")}>
+        {/* Back */}
+        <button className="otp-btn-back" onClick={() => navigate("/register")}>
           ← Back to Register
         </button>
+
       </div>
     </div>
   );

@@ -22,10 +22,12 @@ const studentProfileSchema = new mongoose.Schema(
     github: { type: String, trim: true },
     skills: [{ type: String, trim: true }],
     bio: { type: String, maxlength: 500 },
-    profilePhoto: { type: String }, // URL or signed URL
-    photoKey: { type: String },     // S3 key for photo
-    resumeKey: { type: String },    // S3 key
-    resumeName: { type: String },   // original filename
+    cgpa: { type: Number, min: 0, max: 10 },
+    graduationYear: { type: Number },
+    profilePhoto: { type: String },
+    photoKey: { type: String },
+    resumeKey: { type: String },
+    resumeName: { type: String },
     certificates: [
       {
         key: { type: String },

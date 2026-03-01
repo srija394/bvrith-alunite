@@ -12,11 +12,11 @@ const forumPostSchema = new mongoose.Schema(
     postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     views: { type: Number, default: 0 },
     replyCount: { type: Number, default: 0 },
+    viewedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
-// Text index for search
 forumPostSchema.index({ title: "text", content: "text" });
 
 module.exports = mongoose.model("ForumPost", forumPostSchema);

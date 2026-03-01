@@ -258,8 +258,8 @@ function MentorshipTab() {
                 </td>
                 <td>
                   <div className="match-score-bar">
-                    <div className="match-score-fill" style={{ width:`${Math.round(r.matchScore*100)}%` }} />
-                    <span>{Math.round(r.matchScore*100)}%</span>
+                    <div className="match-score-fill" style={{ width:`${Math.round((r.matchScore ?? 0)*100)}%` }} />
+                    <span>{Math.round((r.matchScore ?? 0)*100)}%</span>
                   </div>
                 </td>
                 <td>

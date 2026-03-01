@@ -11,25 +11,35 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     role: "student",
+    adminCode: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAdminCode, setShowAdminCode] = useState(false);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+    if (name === "role") {
+      setShowAdminCode(value === "admin");
+      setError("");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    if (form.password !== form.confirmPassword) {
+    if (form.password !== form.confirmPassword)
       return setError("Passwords do not match");
-    }
-    if (form.password.length < 6) {
+
+    if (form.password.length < 6)
       return setError("Password must be at least 6 characters");
-    }
+
+    if (form.role === "admin" && !form.adminCode.trim())
+      return setError("Admin secret code is required");
 
     setLoading(true);
     try {
@@ -37,6 +47,7 @@ export default function Register() {
         email: form.email,
         password: form.password,
         role: form.role,
+        adminCode: form.adminCode,
       });
       setSuccess("OTP sent to your email! Redirecting...");
       setTimeout(() => navigate("/verify-otp", { state: { email: form.email } }), 1500);
@@ -59,7 +70,7 @@ export default function Register() {
         <h2>Create Account</h2>
         <p className="auth-subtitle">Join the BVRITH community</p>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error   && <div className="auth-error">{error}</div>}
         {success && <div className="auth-success">{success}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -78,17 +89,31 @@ export default function Register() {
 
           <div className="form-group">
             <label htmlFor="role">I am a...</label>
-            <select
-              id="role"
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-            >
+            <select id="role" name="role" value={form.role} onChange={handleChange}>
               <option value="student">Student</option>
               <option value="alumni">Alumni</option>
               <option value="admin">Admin</option>
             </select>
           </div>
+
+          {/* Admin secret code — only shown when Admin is selected */}
+          {showAdminCode && (
+            <div className="form-group admin-code-group">
+              <label htmlFor="adminCode">🔐 Admin Secret Code</label>
+              <input
+                id="adminCode"
+                type="password"
+                name="adminCode"
+                placeholder="Enter secret code provided by institution"
+                value={form.adminCode}
+                onChange={handleChange}
+                autoComplete="off"
+              />
+              <span className="admin-code-hint">
+                This code is provided by your institution's IT department
+              </span>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="password">Password</label>

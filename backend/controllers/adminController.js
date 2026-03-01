@@ -132,8 +132,12 @@ exports.deleteUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user.role === "admin") return res.status(403).json({ message: "Cannot delete admin" });
 
+    // Cascade delete profile + user
+    await AlumniProfile.deleteOne({ user: user._id });
+    await StudentProfile.deleteOne({ user: user._id });
     await user.deleteOne();
-    res.json({ message: "User deleted" });
+
+    res.json({ message: "User and profile deleted" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -227,6 +231,26 @@ exports.deleteAnnouncement = async (req, res) => {
     await a.deleteOne();
     res.json({ message: "Announcement deleted" });
   } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── DELETE reject + remove alumni account ────────────────
+exports.rejectAlumni = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.role !== "alumni") return res.status(400).json({ message: "User is not alumni" });
+
+    const { sendAlumniRejectedEmail } = require("../utils/emailService");
+    await sendAlumniRejectedEmail(user.email);
+
+    await AlumniProfile.deleteOne({ user: user._id });
+    await user.deleteOne();
+
+    res.json({ message: "Alumni rejected and removed" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

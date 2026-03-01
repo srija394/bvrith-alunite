@@ -5,30 +5,53 @@ import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 import "./Dashboard.css";
 
-const STATS = [
-  { icon: "🎓", label: "Graduation Year", value: "2022" },
-  { icon: "👥", label: "Mentees", value: "5" },
-  { icon: "💡", label: "Jobs Posted", value: "2" },
-  { icon: "🌐", label: "Network Size", value: "148" },
-];
-
 export default function AlumniDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
+  const [stats, setStats] = useState({
+    graduationYear: null,
+    mentees: 0,
+    pendingRequests: 0,
+    totalRequests: 0,
+  });
 
   useEffect(() => {
-    API.get("/admin/announcements?role=alumni").then((r) => {
-      setAnnouncements(r.data.announcements.slice(0, 3));
-    }).catch(() => {});
+    API.get("/admin/announcements?role=alumni")
+      .then((r) => setAnnouncements(r.data.announcements.slice(0, 3)))
+      .catch(() => {});
+
+    Promise.all([
+      API.get("/profile/me").catch(() => null),
+      API.get("/mentorship/my-requests").catch(() => null),
+    ]).then(([profileRes, mentorshipRes]) => {
+      const profile = profileRes?.data?.profile;
+      const requests = mentorshipRes?.data?.requests || [];
+      const accepted = requests.filter((r) => r.status === "accepted").length;
+      const pending = requests.filter((r) => r.status === "pending").length;
+      setStats({
+        graduationYear: profile?.graduationYear ?? null,
+        mentees: accepted,
+        pendingRequests: pending,
+        totalRequests: requests.length,
+      });
+    });
   }, []);
+
+  const STATS = [
+    { icon: "🎓", label: "Graduation Year", value: stats.graduationYear ?? "Not set" },
+    { icon: "👥", label: "Active Mentees", value: stats.mentees },
+    { icon: "📬", label: "Pending Requests", value: stats.pendingRequests },
+    { icon: "📊", label: "Total Requests", value: stats.totalRequests },
+  ];
 
   const QUICK_LINKS = [
     { icon: "📬", label: "Mentorship Requests", desc: "View and respond to student requests", path: "/mentorship/inbox", highlight: true },
     { icon: "💬", label: "Messages", desc: "Chat with students you're mentoring", path: "/messages", highlight: true },
     { icon: "🗓️", label: "Events", desc: "Create and manage college events", path: "/events" },
-    { icon: "💬", label: "Discussion Forum", desc: "Answer student questions and share knowledge", path: "/forum" },
+    { icon: "🗨️", label: "Discussion Forum", desc: "Answer student questions and share knowledge", path: "/forum" },
     { icon: "🎓", label: "Alumni Directory", desc: "Browse and connect with fellow graduates", path: "/alumni/directory" },
+    { icon: "📁", label: "My Files", desc: "Resume, certificates and documents", path: "/my-files" },
   ];
 
   return (
@@ -63,19 +86,31 @@ export default function AlumniDashboard() {
           {STATS.map((s) => (
             <div key={s.label} className="stat-card">
               <span className="stat-icon">{s.icon}</span>
-              <div><div className="stat-value">{s.value}</div><div className="stat-label">{s.label}</div></div>
+              <div>
+                <div className="stat-value">{s.value}</div>
+                <div className="stat-label">{s.label}</div>
+              </div>
             </div>
           ))}
         </section>
-        <h2 className="section-title">What would you like to do?</h2>
-        <section className="links-grid">
-          {QUICK_LINKS.map((l) => (
-            <div key={l.label} className={`link-card ${l.highlight ? "highlight-card" : ""}`}
-              onClick={() => l.path && navigate(l.path)} style={{ cursor: l.path ? "pointer" : "default" }}>
-              <span className="link-icon">{l.icon}</span>
-              <div><strong>{l.label}</strong><p>{l.desc}</p></div>
-            </div>
-          ))}
+
+        <section className="quick-links-grid">
+          <h2 className="section-title">Quick Access</h2>
+          <div className="links-grid">
+            {QUICK_LINKS.map((l) => (
+              <div
+                key={l.label}
+                className={`link-card ${l.highlight ? "highlight" : ""}`}
+                onClick={() => navigate(l.path)}
+              >
+                <span className="link-icon">{l.icon}</span>
+                <div>
+                  <div className="link-label">{l.label}</div>
+                  <div className="link-desc">{l.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       </div>
     </>

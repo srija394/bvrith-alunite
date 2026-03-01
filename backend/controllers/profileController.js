@@ -164,6 +164,12 @@ exports.getAllAlumni = async (req, res) => {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
+    // Only show approved alumni
+    const User = require("../models/User");
+    const approvedAlumniIds = await User.find({ role: "alumni", isApproved: true }).select("_id");
+    const approvedIds = approvedAlumniIds.map(u => u._id);
+    query.user = { $in: approvedIds };
+
     const [profiles, total] = await Promise.all([
       AlumniProfile.find(query)
         .populate("user", "email")

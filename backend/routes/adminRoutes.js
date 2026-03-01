@@ -7,6 +7,7 @@ const {
   toggleUserActive,
   changeRole,
   deleteUser,
+  rejectAlumni,
   getMentorshipStats,
   postAnnouncement,
   getAnnouncements,
@@ -26,6 +27,7 @@ router.patch("/users/:userId/approve", adminOnly, approveAlumni);
 router.patch("/users/:userId/toggle-active", adminOnly, toggleUserActive);
 router.patch("/users/:userId/role", adminOnly, changeRole);
 router.delete("/users/:userId", adminOnly, deleteUser);
+router.delete("/users/:userId/reject", adminOnly, rejectAlumni);
 
 // Mentorship stats
 router.get("/mentorship-stats", adminOnly, getMentorshipStats);
