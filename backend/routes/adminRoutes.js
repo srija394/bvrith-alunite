@@ -2,6 +2,7 @@ const express = require("express");
 const { protect } = require("../middleware/authMiddleware");
 const {
   getStats,
+  getAnalytics,
   getAllUsers,
   approveAlumni,
   toggleUserActive,
@@ -47,6 +48,9 @@ router.get("/mentorship-stats", adminOnly, getMentorshipStats);
 router.get("/announcements", authenticated, getAnnouncements);
 router.post("/announcements", adminOnly, postAnnouncement);
 router.delete("/announcements/:id", adminOnly, deleteAnnouncement);
+
+// Analytics
+router.get("/analytics", adminOnly, getAnalytics);
 
 // CSV Exports
 router.get("/export/users", adminOnly, exportUsers);

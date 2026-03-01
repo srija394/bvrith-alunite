@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import "./AdminPanel.css";
@@ -43,6 +43,7 @@ export default function AdminDashboard() {
             <p>Full institution-level management</p>
           </div>
           <div className="admin-header-actions">
+            <button className="btn-admin-secondary" onClick={() => navigate("/dashboard/admin/analytics")}>📊 Analytics</button>
             <button className="btn-admin-secondary" onClick={() => navigate("/forum")}>💬 Forum</button>
             <button className="btn-admin-secondary" onClick={() => navigate("/events")}>🗓️ Events</button>
             <button className="btn-admin-secondary" onClick={() => navigate("/alumni/directory")}>🎓 Directory</button>

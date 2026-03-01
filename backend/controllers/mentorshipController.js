@@ -3,6 +3,7 @@ const AlumniProfile = require("../models/AlumniProfile");
 const MentorshipRequest = require("../models/MentorshipRequest");
 const User = require("../models/User");
 const { rankMentors } = require("../utils/matchingEngine");
+const { createNotification } = require("../utils/notificationHelper");
 
 // ─── GET recommended mentors for logged-in student ────────
 exports.getRecommendations = async (req, res) => {
@@ -100,6 +101,14 @@ exports.sendRequest = async (req, res) => {
       );
     }
 
+    // In-app notification to alumni
+    await createNotification(
+      alumniUserId,
+      "mentorship_request",
+      `🤝 ${studentProfile.fullName} sent you a mentorship request.`,
+      "/mentorship/inbox"
+    );
+
     res.status(201).json({ message: "Mentorship request sent!", request });
   } catch (err) {
     console.error(err);
@@ -177,6 +186,13 @@ exports.respondToRequest = async (req, res) => {
         alumniProfile?.fullName
       );
     }
+
+    // In-app notification to student
+    const notifType = action === "accepted" ? "mentorship_accepted" : "mentorship_rejected";
+    const notifMsg = action === "accepted"
+      ? `✅ ${alumniProfile?.fullName || "An alumni"} accepted your mentorship request!`
+      : `❌ ${alumniProfile?.fullName || "An alumni"} declined your mentorship request.`;
+    await createNotification(request.student._id, notifType, notifMsg, "/mentorship/find");
 
     res.json({ message: `Request ${action}`, request });
   } catch (err) {

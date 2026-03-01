@@ -1,10 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 import "./Auth.css";
 
+function initializeGoogleRegister(clientId, onToken) {
+  if (!window.google) return;
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: (response) => onToken(response.credential),
+  });
+  window.google.accounts.id.renderButton(
+    document.getElementById("google-register-btn"),
+    { theme: "outline", size: "large", width: "100%", text: "signup_with" }
+  );
+}
+
 export default function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -17,6 +31,7 @@ export default function Register() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [showAdminCode, setShowAdminCode] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,6 +73,44 @@ export default function Register() {
     }
   };
 
+  const googleEnabled = !!process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
+  useEffect(() => {
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+    if (!document.getElementById("google-gsi-script")) {
+      const script = document.createElement("script");
+      script.id = "google-gsi-script";
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => initializeGoogleRegister(clientId, handleGoogleToken);
+      document.head.appendChild(script);
+    } else if (window.google) {
+      initializeGoogleRegister(clientId, handleGoogleToken);
+    }
+  // eslint-disable-next-line
+  }, []);
+
+  const handleGoogleToken = async (idToken) => {
+    setGoogleLoading(true);
+    setError("");
+    try {
+      const { data } = await API.post("/auth/google", { idToken });
+      if (data.needsRoleSelection) {
+        navigate("/google/select-role", { state: { tempToken: data.tempToken, email: data.email } });
+        return;
+      }
+      login(data.token, data.role, data.email);
+      if (data.role === "alumni") navigate("/dashboard/alumni");
+      else navigate("/dashboard/student");
+    } catch (err) {
+      setError(err.response?.data?.message || "Google sign-up failed.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
@@ -72,6 +125,14 @@ export default function Register() {
 
         {error   && <div className="auth-error">{error}</div>}
         {success && <div className="auth-success">{success}</div>}
+        {googleLoading && <div className="auth-info">Completing Google sign-up…</div>}
+
+        {googleEnabled && (
+          <>
+            <div id="google-register-btn" className="google-btn-container" />
+            <div className="auth-divider"><span>or register with email</span></div>
+          </>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">

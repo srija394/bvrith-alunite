@@ -5,6 +5,7 @@ const MentorshipRequest = require("../models/MentorshipRequest");
 const Event = require("../models/Event");
 const Message = require("../models/Message");
 const Announcement = require("../models/Announcement");
+const { createNotification } = require("../utils/notificationHelper");
 
 // ─── GET overview stats ───────────────────────────────────
 exports.getStats = async (req, res) => {
@@ -197,6 +198,17 @@ exports.postAnnouncement = async (req, res) => {
       pinned: !!pinned,
       postedBy: req.user.id,
     });
+
+    // Notify relevant users in background (best-effort)
+    const roleFilter = announcement.targetRole === "all"
+      ? { role: { $in: ["student", "alumni"] } }
+      : { role: announcement.targetRole };
+    const notifUsers = await User.find(roleFilter).select("_id");
+    await Promise.all(
+      notifUsers.map((u) =>
+        createNotification(u._id, "announcement", `📣 New announcement: ${title.trim()}`, "/events")
+      )
+    );
 
     res.status(201).json({ message: "Announcement posted", announcement });
   } catch (err) {
@@ -471,3 +483,104 @@ exports.exportEvents = async (req, res) => {
     res.status(500).json({ message: "Export failed" });
   }
 };
+
+// ─── GET analytics data for charts ────────────────────────
+exports.getAnalytics = async (req, res) => {
+  try {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(now.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    // ── 1. Mentorship acceptance rate over last 6 months ──
+    const mentorshipByMonth = await MentorshipRequest.aggregate([
+      { $match: { createdAt: { $gte: sixMonthsAgo } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            status: "$status",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
+
+    // Build month-by-month series
+    const monthLabels = [];
+    const mentorshipSeries = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now);
+      d.setMonth(now.getMonth() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      monthLabels.push(key);
+      mentorshipSeries[key] = { month: key, total: 0, accepted: 0, acceptanceRate: 0 };
+    }
+    mentorshipByMonth.forEach(({ _id, count }) => {
+      const key = `${_id.year}-${String(_id.month).padStart(2, "0")}`;
+      if (mentorshipSeries[key]) {
+        mentorshipSeries[key].total += count;
+        if (_id.status === "accepted") mentorshipSeries[key].accepted += count;
+      }
+    });
+    const mentorshipChart = Object.values(mentorshipSeries).map((m) => ({
+      ...m,
+      acceptanceRate: m.total > 0 ? Math.round((m.accepted / m.total) * 100) : 0,
+    }));
+
+    // ── 2. Top skills in demand (from StudentProfile.skills) ──
+    const skillsAgg = await StudentProfile.aggregate([
+      { $unwind: "$skills" },
+      { $group: { _id: "$skills", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]);
+    const topSkills = skillsAgg.map((s) => ({ skill: s._id, count: s.count }));
+
+    // ── 3. Active alumni by graduation year ──
+    const alumniByYear = await AlumniProfile.aggregate([
+      { $match: { graduationYear: { $exists: true, $ne: null } } },
+      { $group: { _id: "$graduationYear", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+      { $limit: 10 },
+    ]);
+    const alumniChart = alumniByYear.map((a) => ({ year: String(a._id), count: a.count }));
+
+    // ── 4. Event attendance trends (registrations per event over last 6 months) ──
+    const eventStats = await Event.aggregate([
+      { $match: { date: { $gte: sixMonthsAgo } } },
+      {
+        $project: {
+          title: 1,
+          date: 1,
+          attendeeCount: { $size: { $ifNull: ["$registrations", []] } },
+        },
+      },
+      { $sort: { date: 1 } },
+      { $limit: 12 },
+    ]);
+    const eventChart = eventStats.map((e) => ({
+      title: e.title?.substring(0, 20) || "Event",
+      attendees: e.attendeeCount,
+      date: e.date,
+    }));
+
+    // ── 5. Alumni by branch (from AlumniProfile.branch) ──
+    const alumniByBranch = await AlumniProfile.aggregate([
+      { $match: { branch: { $exists: true, $ne: "" } } },
+      { $group: { _id: "$branch", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+    ]);
+    const branchChart = alumniByBranch.map((b) => ({ branch: b._id || "Unknown", count: b.count }));
+
+    res.json({ mentorshipChart, topSkills, alumniChart, eventChart, branchChart });
+  } catch (err) {
+    console.error("[Analytics]", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

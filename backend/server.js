@@ -22,6 +22,7 @@ app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/forum", require("./routes/forumRoutes"));
 app.use("/api/jobs", require("./routes/jobRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

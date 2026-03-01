@@ -27,6 +27,9 @@ import ForumPage from "./pages/ForumPage";
 import ForumPostPage from "./pages/ForumPostPage";
 import JobsPage from "./pages/JobsPage";
 import JobDetail from "./pages/JobDetail";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import GoogleRoleSelect from "./pages/GoogleRoleSelect";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -75,6 +78,15 @@ function App() {
 
           <Route path="/jobs" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><JobsPage /></ProtectedRoute>} />
           <Route path="/jobs/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><JobDetail /></ProtectedRoute>} />
+
+          {/* Analytics */}
+          <Route path="/dashboard/admin/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><AnalyticsPage /></ProtectedRoute>} />
+
+          {/* Notifications */}
+          <Route path="/notifications" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><NotificationsPage /></ProtectedRoute>} />
+
+          {/* Google OAuth role selection */}
+          <Route path="/google/select-role" element={<GoogleRoleSelect />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

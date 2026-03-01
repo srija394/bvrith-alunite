@@ -1,8 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 import "./Auth.css";
+
+/* ── Google One-Tap helper ─────────────────────────────── */
+function useGoogleSignIn(onToken) {
+  useEffect(() => {
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    if (!clientId) return; // Google SSO disabled if no client ID configured
+
+    // Dynamically load the Google Identity Services script
+    if (!document.getElementById("google-gsi-script")) {
+      const script = document.createElement("script");
+      script.id = "google-gsi-script";
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => initializeGoogle(clientId, onToken);
+      document.head.appendChild(script);
+    } else if (window.google) {
+      initializeGoogle(clientId, onToken);
+    }
+  }, [onToken]);
+}
+
+function initializeGoogle(clientId, onToken) {
+  if (!window.google) return;
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: (response) => onToken(response.credential),
+  });
+  window.google.accounts.id.renderButton(
+    document.getElementById("google-signin-btn"),
+    { theme: "outline", size: "large", width: "100%", text: "signin_with" }
+  );
+}
 
 export default function Login() {
   const { login } = useAuth();
@@ -11,6 +44,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,7 +56,6 @@ export default function Login() {
     try {
       const { data } = await API.post("/auth/login", form);
       login(data.token, data.role, form.email);
-      // Role-based redirect
       if (data.role === "admin") navigate("/dashboard/admin");
       else if (data.role === "alumni") navigate("/dashboard/alumni");
       else navigate("/dashboard/student");
@@ -38,6 +71,32 @@ export default function Login() {
     }
   };
 
+  const handleGoogleToken = async (idToken) => {
+    setGoogleLoading(true);
+    setError("");
+    try {
+      const { data } = await API.post("/auth/google", { idToken });
+      if (data.needsRoleSelection) {
+        navigate("/google/select-role", {
+          state: { tempToken: data.tempToken, email: data.email },
+        });
+        return;
+      }
+      login(data.token, data.role, data.email);
+      if (data.role === "admin") navigate("/dashboard/admin");
+      else if (data.role === "alumni") navigate("/dashboard/alumni");
+      else navigate("/dashboard/student");
+    } catch (err) {
+      setError(err.response?.data?.message || "Google sign-in failed.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  useGoogleSignIn(handleGoogleToken);
+
+  const googleEnabled = !!process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
@@ -51,6 +110,15 @@ export default function Login() {
         <p className="auth-subtitle">Sign in to your account</p>
 
         {error && <div className="auth-error">{error}</div>}
+        {googleLoading && <div className="auth-info">Completing Google sign-in…</div>}
+
+        {/* Google Sign-In Button (rendered by GSI library or fallback) */}
+        {googleEnabled && (
+          <>
+            <div id="google-signin-btn" className="google-btn-container" />
+            <div className="auth-divider"><span>or sign in with email</span></div>
+          </>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">

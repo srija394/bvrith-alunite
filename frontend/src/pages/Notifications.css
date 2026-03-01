@@ -1,0 +1,359 @@
+/* ── Notifications Page ──────────────────────────────────── */
+.notif-page-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.notif-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.notif-page-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 8px 0 0;
+  display: inline;
+}
+
+.notif-unread-badge {
+  display: inline-block;
+  background: #ef4444;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.notif-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.notif-filter-group {
+  display: flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.notif-filter-btn {
+  background: #f8fafc;
+  border: none;
+  padding: 7px 16px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s;
+}
+
+.notif-filter-btn.active {
+  background: #6366f1;
+  color: white;
+  font-weight: 600;
+}
+
+.notif-mark-all-btn {
+  background: none;
+  border: 1px solid #6366f1;
+  color: #6366f1;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.notif-mark-all-btn:hover {
+  background: #6366f1;
+  color: white;
+}
+
+/* ── Notification Items ──────────────────────────────────── */
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.notif-item:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.notif-item.notif-unread {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.notif-item.notif-unread::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 70%;
+  background: #6366f1;
+  border-radius: 0 3px 3px 0;
+}
+
+.notif-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-message {
+  margin: 0 0 4px;
+  color: #1e293b;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.notif-time {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.notif-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.notif-mark-read,
+.notif-delete {
+  background: none;
+  border: 1px solid #e2e8f0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.15s;
+}
+
+.notif-mark-read:hover {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.notif-delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+/* ── States ──────────────────────────────────────────────── */
+.notif-loading {
+  text-align: center;
+  color: #94a3b8;
+  padding: 48px;
+}
+
+.notif-empty {
+  text-align: center;
+  padding: 64px 20px;
+  color: #94a3b8;
+}
+
+.notif-empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.notif-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.notif-pagination button {
+  background: none;
+  border: 1px solid #e2e8f0;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.notif-pagination button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.notif-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Navbar Bell Dropdown (used by Navbar.js) ────────────── */
+.navbar-bell-wrapper {
+  position: relative;
+}
+
+.navbar-bell-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  position: relative;
+  transition: background 0.15s;
+}
+
+.navbar-bell-btn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.navbar-bell-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+.navbar-notif-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.navbar-notif-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.navbar-notif-dropdown-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.navbar-notif-dropdown-header a {
+  font-size: 0.8rem;
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.navbar-notif-dropdown-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.navbar-notif-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.navbar-notif-item:hover {
+  background: #f8fafc;
+}
+
+.navbar-notif-item.unread {
+  background: #eef2ff;
+}
+
+.navbar-notif-item-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.navbar-notif-item-msg {
+  font-size: 0.82rem;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.navbar-notif-item-time {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.navbar-notif-dropdown-footer {
+  padding: 10px 16px;
+  text-align: center;
+  border-top: 1px solid #e2e8f0;
+}
+
+.navbar-notif-dropdown-footer a {
+  font-size: 0.85rem;
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.navbar-notif-empty {
+  padding: 32px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}

@@ -277,3 +277,96 @@
   margin-bottom: 1rem;
   text-align: center;
 }
+/* ── Google OAuth styles ──────────────────────────────── */
+.google-btn-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 1rem;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.auth-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Role picker cards (GoogleRoleSelect) */
+.role-picker {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.role-card {
+  flex: 1;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.role-card:hover {
+  border-color: #6366f1;
+  background: #f0f0ff;
+}
+
+.role-card.selected {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+.role-card-label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #1e293b;
+}
+
+.role-card-desc {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.btn-auth {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 8px;
+}
+
+.btn-auth:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

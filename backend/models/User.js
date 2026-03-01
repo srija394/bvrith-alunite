@@ -8,12 +8,24 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: false, // Optional for Google OAuth users
+    default: null,
   },
   role: {
     type: String,
     enum: ["student", "alumni", "admin"],
     required: true
+  },
+  googleId: {
+    type: String,
+    default: null,
+    index: true,
+    sparse: true,
+  },
+  // Flag for Google OAuth users who still need to pick a role
+  needsRoleSelection: {
+    type: Boolean,
+    default: false,
   },
   isEmailVerified: {
     type: Boolean,
