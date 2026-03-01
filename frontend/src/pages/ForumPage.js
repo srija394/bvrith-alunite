@@ -59,6 +59,19 @@ export default function ForumPage() {
 
   useEffect(() => { fetchPosts(); }, [category, search, page]);
 
+  const handleUpvote = async (postId) => {
+    try {
+      const { data } = await API.post(`/forum/${postId}/upvote`);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, upvoteCount: data.upvoteCount, hasUpvoted: data.hasUpvoted }
+            : p
+        )
+      );
+    } catch {}
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     setSearch(searchInput);
@@ -198,6 +211,13 @@ export default function ForumPage() {
                   </div>
                 </div>
                 <div className="post-card-right">
+                  <button
+                    className={`upvote-btn${post.hasUpvoted ? " upvoted" : ""}`}
+                    onClick={(e) => { e.stopPropagation(); handleUpvote(post._id); }}
+                    title={post.hasUpvoted ? "Remove upvote" : "Upvote"}
+                  >
+                    ▲ <span>{post.upvoteCount || 0}</span>
+                  </button>
                   <div className="post-stat">
                     <span className="stat-num">{post.replyCount}</span>
                     <span className="stat-label">replies</span>

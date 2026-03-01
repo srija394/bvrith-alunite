@@ -41,6 +41,7 @@ exports.getAllPosts = async (req, res) => {
     ]);
 
     // Attach author names
+    const userId = req.user?.id;
     const enriched = await Promise.all(
       posts.map(async (p) => ({
         _id: p._id,
@@ -49,6 +50,8 @@ exports.getAllPosts = async (req, res) => {
         category: p.category,
         views: p.views,
         replyCount: p.replyCount,
+        upvoteCount: (p.upvotes || []).length,
+        hasUpvoted: userId ? p.upvotes.some((id) => id.toString() === userId) : false,
         createdAt: p.createdAt,
         author: await getAuthorInfo(p.postedBy),
       }))
@@ -120,6 +123,8 @@ exports.getPost = async (req, res) => {
         category: post.category,
         views: post.views,
         replyCount: post.replyCount,
+        upvoteCount: (post.upvotes || []).length,
+        hasUpvoted: post.upvotes.some((id) => id.toString() === req.user.id),
         createdAt: post.createdAt,
         author: postAuthor,
         isOwner: post.postedBy._id.toString() === req.user.id,
@@ -208,6 +213,31 @@ exports.deleteReply = async (req, res) => {
     await reply.deleteOne();
 
     res.json({ message: "Reply deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── POST toggle upvote ───────────────────────────────────
+exports.toggleUpvote = async (req, res) => {
+  try {
+    const post = await ForumPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const userId = req.user.id;
+    const idx = post.upvotes.findIndex((id) => id.toString() === userId);
+    if (idx === -1) {
+      post.upvotes.push(userId);
+    } else {
+      post.upvotes.splice(idx, 1);
+    }
+    await post.save();
+
+    res.json({
+      upvoteCount: post.upvotes.length,
+      hasUpvoted: idx === -1,   // true if just added
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

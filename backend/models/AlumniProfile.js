@@ -18,6 +18,9 @@ const alumniProfileSchema = new mongoose.Schema(
     profilePhoto: { type: String },
     photoKey: { type: String },
     isAvailableForMentorship: { type: Boolean, default: false },
+    availableForTalks: { type: Boolean, default: false },
+    portfolioUrl: { type: String, trim: true },
+    webinarTopics: [{ type: String, trim: true }],
     resumeKey: { type: String },
     resumeName: { type: String },
     // Graduation document (marksheet / degree cert) — for admin approval

@@ -563,3 +563,21 @@
 .btn-close-reg:hover { background: #f0f0f0; }
 
 .no-score { color: #ccc; font-size: 0.85rem; }
+
+/* ── Export Button ─────────────────────────────────────── */
+.btn-export {
+  padding: 0.45rem 1rem;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-export:hover {
+  background: #dcfce7;
+  border-color: #16a34a;
+}

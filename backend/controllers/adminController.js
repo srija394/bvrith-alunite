@@ -350,3 +350,124 @@ exports.getAllEventsAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// ─── Helper: convert array of objects to CSV string ──────
+function toCSV(rows, fields) {
+  const escape = (v) => {
+    if (v === null || v === undefined) return "";
+    const s = String(v).replace(/"/g, '""');
+    return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s}"` : s;
+  };
+  const header = fields.map((f) => f.label).join(",");
+  const body = rows.map((row) => fields.map((f) => escape(f.value(row))).join(",")).join("\n");
+  return header + "\n" + body;
+}
+
+function sendCSV(res, filename, csv) {
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  res.send(csv);
+}
+
+// ─── GET /api/admin/export/users ─────────────────────────
+exports.exportUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: { $ne: "admin" } })
+      .sort({ createdAt: -1 })
+      .select("-password");
+
+    const enriched = await Promise.all(users.map(async (u) => {
+      const profile = u.role === "student"
+        ? await StudentProfile.findOne({ user: u._id }).select("fullName branch year cgpa rollNumber")
+        : await AlumniProfile.findOne({ user: u._id }).select("fullName branch graduationYear currentCompany currentRole");
+      return { ...u.toObject(), profile };
+    }));
+
+    const fields = [
+      { label: "Email",          value: (r) => r.email },
+      { label: "Role",           value: (r) => r.role },
+      { label: "Full Name",      value: (r) => r.profile?.fullName || "" },
+      { label: "Branch",         value: (r) => r.profile?.branch || "" },
+      { label: "Roll Number",    value: (r) => r.role === "student" ? r.profile?.rollNumber || "" : "" },
+      { label: "Year",           value: (r) => r.role === "student" ? r.profile?.year || "" : "" },
+      { label: "CGPA",           value: (r) => r.role === "student" ? r.profile?.cgpa || "" : "" },
+      { label: "Graduation Year",value: (r) => r.role === "alumni" ? r.profile?.graduationYear || "" : "" },
+      { label: "Company",        value: (r) => r.role === "alumni" ? r.profile?.currentCompany || "" : "" },
+      { label: "Role/Title",     value: (r) => r.role === "alumni" ? r.profile?.currentRole || "" : "" },
+      { label: "Approved",       value: (r) => r.role === "alumni" ? (r.isApproved ? "Yes" : "No") : "N/A" },
+      { label: "Active",         value: (r) => r.isActive ? "Yes" : "No" },
+      { label: "Joined",         value: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-IN") : "" },
+    ];
+
+    sendCSV(res, `users_export_${Date.now()}.csv`, toCSV(enriched, fields));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Export failed" });
+  }
+};
+
+// ─── GET /api/admin/export/mentorship ─────────────────────
+exports.exportMentorship = async (req, res) => {
+  try {
+    const requests = await MentorshipRequest.find()
+      .populate("student", "email")
+      .populate("alumni", "email")
+      .sort({ createdAt: -1 });
+
+    const enriched = await Promise.all(requests.map(async (r) => {
+      const studentProfile = await StudentProfile.findOne({ user: r.student?._id }).select("fullName branch year");
+      const alumniProfile  = await AlumniProfile.findOne({ user: r.alumni?._id }).select("fullName currentCompany");
+      return { ...r.toObject(), studentProfile, alumniProfile };
+    }));
+
+    const fields = [
+      { label: "Student Email",    value: (r) => r.student?.email || "" },
+      { label: "Student Name",     value: (r) => r.studentProfile?.fullName || "" },
+      { label: "Student Branch",   value: (r) => r.studentProfile?.branch || "" },
+      { label: "Student Year",     value: (r) => r.studentProfile?.year || "" },
+      { label: "Alumni Email",     value: (r) => r.alumni?.email || "" },
+      { label: "Alumni Name",      value: (r) => r.alumniProfile?.fullName || "" },
+      { label: "Alumni Company",   value: (r) => r.alumniProfile?.currentCompany || "" },
+      { label: "Status",           value: (r) => r.status },
+      { label: "Message",          value: (r) => r.message || "" },
+      { label: "Date",             value: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-IN") : "" },
+    ];
+
+    sendCSV(res, `mentorship_export_${Date.now()}.csv`, toCSV(enriched, fields));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Export failed" });
+  }
+};
+
+// ─── GET /api/admin/export/events ────────────────────────
+exports.exportEvents = async (req, res) => {
+  try {
+    const events = await Event.find()
+      .populate("createdBy", "email")
+      .sort({ createdAt: -1 });
+
+    const rows = events.map((e) => ({
+      ...e.toObject(),
+      registrationCount: e.registrations?.length || 0,
+    }));
+
+    const fields = [
+      { label: "Title",         value: (r) => r.title },
+      { label: "Category",      value: (r) => r.category },
+      { label: "Mode",          value: (r) => r.mode },
+      { label: "Date",          value: (r) => r.date ? new Date(r.date).toLocaleDateString("en-IN") : "" },
+      { label: "Time",          value: (r) => r.time },
+      { label: "Venue",         value: (r) => r.venue },
+      { label: "Max Attendees", value: (r) => r.maxAttendees || "Unlimited" },
+      { label: "Registrations", value: (r) => r.registrationCount },
+      { label: "Created By",    value: (r) => r.createdBy?.email || "" },
+      { label: "Created At",    value: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-IN") : "" },
+    ];
+
+    sendCSV(res, `events_export_${Date.now()}.csv`, toCSV(rows, fields));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Export failed" });
+  }
+};

@@ -283,6 +283,9 @@ function AlumniCard({ alumni, navigate }) {
         {alumni.isAvailableForMentorship && (
           <span className="meta-badge mentor">Mentoring ✅</span>
         )}
+        {alumni.availableForTalks && (
+          <span className="meta-badge" style={{background:"#ede9fe",color:"#5b21b6",border:"1px solid #ddd6fe"}}>🎤 Talks</span>
+        )}
       </div>
 
       {alumni.skills?.length > 0 && (
@@ -304,6 +307,10 @@ function AlumniCard({ alumni, navigate }) {
         {alumni.github && (
           <a href={alumni.github} target="_blank" rel="noreferrer"
             onClick={(e) => e.stopPropagation()}>🐙 GitHub</a>
+        )}
+        {alumni.portfolioUrl && (
+          <a href={alumni.portfolioUrl} target="_blank" rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}>🌐 Portfolio</a>
         )}
       </div>
     </div>

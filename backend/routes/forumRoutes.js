@@ -7,6 +7,7 @@ const {
   addReply,
   deletePost,
   deleteReply,
+  toggleUpvote,
 } = require("../controllers/forumController");
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.post("/", auth, requireApproved, createPost);
 router.post("/:id/reply", auth, requireApproved, addReply);
 router.delete("/:id", auth, requireApproved, deletePost);
 router.delete("/reply/:replyId", auth, requireApproved, deleteReply);
+router.post("/:id/upvote", auth, toggleUpvote);
 
 module.exports = router;

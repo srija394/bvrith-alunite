@@ -15,6 +15,9 @@ const {
   postAnnouncement,
   getAnnouncements,
   deleteAnnouncement,
+  exportUsers,
+  exportMentorship,
+  exportEvents,
 } = require("../controllers/adminController");
 
 const router = express.Router();
@@ -44,5 +47,10 @@ router.get("/mentorship-stats", adminOnly, getMentorshipStats);
 router.get("/announcements", authenticated, getAnnouncements);
 router.post("/announcements", adminOnly, postAnnouncement);
 router.delete("/announcements/:id", adminOnly, deleteAnnouncement);
+
+// CSV Exports
+router.get("/export/users", adminOnly, exportUsers);
+router.get("/export/mentorship", adminOnly, exportMentorship);
+router.get("/export/events", adminOnly, exportEvents);
 
 module.exports = router;

@@ -28,8 +28,13 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     currentRole: "",
     location: "",
     isAvailableForMentorship: false,
+    availableForTalks: false,
+    portfolioUrl: "",
+    webinarTopics: "",
     ...initial,
     skills: Array.isArray(initial.skills) ? initial.skills.join(", ") : (initial.skills || ""),
+    webinarTopics: Array.isArray(initial.webinarTopics) ? initial.webinarTopics.join(", ") : (initial.webinarTopics || ""),
+    availableForTalks: initial.availableForTalks || false,
   });
 
   const handleChange = (e) => {
@@ -42,6 +47,7 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     const payload = {
       ...form,
       skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
+      webinarTopics: form.webinarTopics ? form.webinarTopics.split(",").map((s) => s.trim()).filter(Boolean) : [],
     };
     onSubmit(payload);
   };
@@ -147,14 +153,40 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
           <span className="char-count">{form.bio.length}/500</span>
         </div>
 
-        {/* ── Alumni mentorship toggle ── */}
+        {/* ── Alumni mentorship + talks toggles ── */}
         {isAlumni && (
-          <div className="form-group full-width">
-            <label className="checkbox-label">
-              <input type="checkbox" name="isAvailableForMentorship" checked={form.isAvailableForMentorship} onChange={handleChange} />
-              I'm available for mentoring students
-            </label>
-          </div>
+          <>
+            <div className="form-group full-width">
+              <label className="checkbox-label">
+                <input type="checkbox" name="isAvailableForMentorship" checked={form.isAvailableForMentorship} onChange={handleChange} />
+                I'm available for mentoring students
+              </label>
+            </div>
+            <div className="form-group full-width">
+              <label className="checkbox-label">
+                <input type="checkbox" name="availableForTalks" checked={form.availableForTalks || false} onChange={handleChange} />
+                I'm available to give talks / webinars for students
+              </label>
+            </div>
+            <div className="form-group">
+              <label>Portfolio / Personal Website</label>
+              <input
+                name="portfolioUrl"
+                value={form.portfolioUrl || ""}
+                onChange={handleChange}
+                placeholder="https://yourportfolio.com"
+              />
+            </div>
+            <div className="form-group">
+              <label>Webinar / Talk Topics <span style={{color:"#888",fontWeight:400}}>(comma-separated)</span></label>
+              <input
+                name="webinarTopics"
+                value={form.webinarTopics || ""}
+                onChange={handleChange}
+                placeholder="e.g. System Design, DSA, Cloud Computing"
+              />
+            </div>
+          </>
         )}
       </div>
 

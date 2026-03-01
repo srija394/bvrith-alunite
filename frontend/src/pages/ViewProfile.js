@@ -69,6 +69,12 @@ export default function ViewProfile() {
               {isAlumni && profile.isAvailableForMentorship && (
                 <span className="mentorship-badge">✅ Available for Mentorship</span>
               )}
+              {isAlumni && profile.availableForTalks && (
+                <span className="mentorship-badge" style={{background:"#ede9fe",color:"#5b21b6",marginLeft:"0.4rem"}}>🎤 Available for Talks</span>
+              )}
+              {isAlumni && profile.portfolioUrl && (
+                <a href={profile.portfolioUrl} target="_blank" rel="noreferrer" style={{display:"inline-block",marginLeft:"0.4rem",fontSize:"0.85rem",color:"#0891b2"}}>🌐 Portfolio ↗</a>
+              )}
 
               <div className="profile-links">
                 {profile.linkedIn && <a href={profile.linkedIn} target="_blank" rel="noreferrer">🔗 LinkedIn</a>}
@@ -98,6 +104,18 @@ export default function ViewProfile() {
               <h3>Skills</h3>
               <div className="skills-list">
                 {profile.skills.map((s) => <span key={s} className="skill-tag">{s}</span>)}
+              </div>
+            </div>
+          )}
+
+          {/* Webinar Topics */}
+          {isAlumni && profile.webinarTopics?.length > 0 && (
+            <div className="profile-section">
+              <h3>🎤 Talk & Webinar Topics</h3>
+              <div className="skills-list">
+                {profile.webinarTopics.map((t) => (
+                  <span key={t} className="skill-tag" style={{background:"#ede9fe",color:"#5b21b6"}}>{t}</span>
+                ))}
               </div>
             </div>
           )}

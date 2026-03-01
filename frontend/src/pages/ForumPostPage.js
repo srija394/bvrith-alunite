@@ -34,6 +34,13 @@ export default function ForumPostPage() {
   const [error, setError] = useState("");
   const bottomRef = useRef(null);
 
+  const handleUpvote = async () => {
+    try {
+      const { data } = await API.post(`/forum/${id}/upvote`);
+      setPost((p) => ({ ...p, upvoteCount: data.upvoteCount, hasUpvoted: data.hasUpvoted }));
+    } catch {}
+  };
+
   const fetchPost = async () => {
     try {
       const { data } = await API.get(`/forum/${id}`);
@@ -123,6 +130,13 @@ export default function ForumPostPage() {
                 {CAT_ICON[post.category]} {post.category}
               </span>
               <div className="post-stats-row">
+                <button
+                  className={`upvote-btn${post.hasUpvoted ? " upvoted" : ""}`}
+                  onClick={handleUpvote}
+                  title={post.hasUpvoted ? "Remove upvote" : "Upvote this post"}
+                >
+                  ▲ {post.upvoteCount || 0} upvote{post.upvoteCount !== 1 ? "s" : ""}
+                </button>
                 <span>👁 {post.views} views</span>
                 <span>💬 {post.replyCount} replies</span>
               </div>

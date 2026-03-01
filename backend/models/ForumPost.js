@@ -13,6 +13,7 @@ const forumPostSchema = new mongoose.Schema(
     views: { type: Number, default: 0 },
     replyCount: { type: Number, default: 0 },
     viewedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

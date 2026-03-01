@@ -4,6 +4,24 @@ import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import "./AdminPanel.css";
 
+// Helper — trigger a CSV file download from an API route
+function downloadCSV(endpoint, filename) {
+  const token = localStorage.getItem("token");
+  fetch(`http://localhost:5000/api${endpoint}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((r) => r.blob())
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    })
+    .catch(() => alert("Export failed"));
+}
+
 const TABS = [
   { id: "overview",      label: "📊 Overview" },
   { id: "users",         label: "👥 Users" },
@@ -166,6 +184,9 @@ function UsersTab() {
             <option value="student">Students</option>
             <option value="alumni">Alumni</option>
           </select>
+          <button className="btn-export" onClick={() => downloadCSV("/admin/export/users", "users.csv")}>
+            ⬇️ Export CSV
+          </button>
         </div>
       </div>
       {loading ? <Loader /> : (
@@ -377,7 +398,12 @@ function MentorshipTab() {
 
   return (
     <div>
-      <h2 className="tab-title">Mentorship Overview</h2>
+      <div className="tab-toolbar">
+        <h2 className="tab-title">Mentorship Overview</h2>
+        <button className="btn-export" onClick={() => downloadCSV("/admin/export/mentorship", "mentorship.csv")}>
+          ⬇️ Export CSV
+        </button>
+      </div>
       <div className="mentorship-stats-row">
         {[
           { label: "Total Requests", value: data.total,    icon: "🤝" },
@@ -448,7 +474,12 @@ function EventsTab() {
 
   return (
     <div>
-      <h2 className="tab-title">Events & Registrations</h2>
+      <div className="tab-toolbar">
+        <h2 className="tab-title">Events &amp; Registrations</h2>
+        <button className="btn-export" onClick={() => downloadCSV("/admin/export/events", "events.csv")}>
+          ⬇️ Export CSV
+        </button>
+      </div>
       {loading ? <Loader /> : events.length === 0 ? (
         <div className="empty-state">🗓️ No events yet.</div>
       ) : (
