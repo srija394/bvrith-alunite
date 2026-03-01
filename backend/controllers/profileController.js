@@ -229,3 +229,45 @@ exports.getAllStudents = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+// ─── POST add achievement ─────────────────────────────────
+exports.addAchievement = async (req, res) => {
+  try {
+    const Model = getModel(req.user.role);
+    const profile = await Model.findOne({ user: req.user.id });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    const { title, description, date, link } = req.body;
+    if (!title) return res.status(400).json({ message: "Title is required" });
+
+    profile.achievements = profile.achievements || [];
+    profile.achievements.push({ title, description, date: date || null, link });
+    await profile.save();
+
+    res.status(201).json({ message: "Achievement added", achievements: profile.achievements });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── DELETE achievement ───────────────────────────────────
+exports.deleteAchievement = async (req, res) => {
+  try {
+    const Model = getModel(req.user.role);
+    const profile = await Model.findOne({ user: req.user.id });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    const before = (profile.achievements || []).length;
+    profile.achievements = (profile.achievements || []).filter(
+      (a) => a._id.toString() !== req.params.achievementId
+    );
+
+    if (profile.achievements.length === before) {
+      return res.status(404).json({ message: "Achievement not found" });
+    }
+
+    await profile.save();
+    res.json({ message: "Achievement deleted", achievements: profile.achievements });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};

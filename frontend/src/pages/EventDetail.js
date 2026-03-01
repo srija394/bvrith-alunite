@@ -89,7 +89,13 @@ export default function EventDetail() {
       <div className="event-detail-container">
 
         {/* Banner */}
-        <div className="event-detail-banner" style={{ background: event.bannerColor || "#0f3460" }}>
+        <div
+          className="event-detail-banner"
+          style={event.bannerUrl
+            ? { backgroundImage: `url(${event.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center", background: event.bannerColor || "#0f3460" }
+            : { background: event.bannerColor || "#0f3460" }
+          }
+        >
           <button className="btn-back-white" onClick={() => navigate("/events")}>← Events</button>
           <div className="banner-content">
             <span className="banner-icon">{CATEGORY_ICONS[event.category] || "📅"}</span>

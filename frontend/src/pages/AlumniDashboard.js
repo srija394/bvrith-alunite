@@ -63,6 +63,7 @@ export default function AlumniDashboard() {
     { icon: "🗨️", label: "Discussion Forum",   desc: "Answer student questions and share knowledge",    path: "/forum",                              locked: !isApproved },
     { icon: "🎓", label: "Alumni Directory",    desc: "Browse and connect with fellow graduates",        path: "/alumni/directory",                   locked: !isApproved },
     { icon: "📁", label: "My Files",            desc: "Resume, certificates and documents",              path: "/my-files" },
+    { icon: "💼", label: "Post a Job",           desc: "Share job/internship opportunities with students", path: "/jobs",             locked: !isApproved },
   ];
 
   return (

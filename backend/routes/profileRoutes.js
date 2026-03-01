@@ -8,6 +8,8 @@ const {
   getAllAlumni,
   getAllStudents,
   getAlumniFilterOptions,
+  addAchievement,
+  deleteAchievement,
 } = require("../controllers/profileController");
 
 const router = express.Router();
@@ -23,6 +25,10 @@ router.get("/alumni/filters", getAlumniFilterOptions);
 
 // Admin only
 router.get("/students/all", protect(["admin"]), getAllStudents);
+
+// Achievements
+router.post("/me/achievements", protect(["student", "alumni"]), addAchievement);
+router.delete("/me/achievements/:achievementId", protect(["student", "alumni"]), deleteAchievement);
 
 // Public: view any profile by userId + role (keep LAST to avoid route conflicts)
 router.get("/:role/:id", getProfileById);

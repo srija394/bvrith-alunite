@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import "./ProfilePages.css";
+import { AchievementsSection } from "./ViewProfile";
 
 export default function PublicAlumniProfile() {
   const { id } = useParams();
@@ -131,6 +132,13 @@ export default function PublicAlumniProfile() {
                 ))}
               </div>
             </div>
+          )}
+          {/* Achievements */}
+          {profile.achievements?.length > 0 && (
+            <AchievementsSection
+              achievements={profile.achievements}
+              editable={false}
+            />
           )}
         </div>
       </div>

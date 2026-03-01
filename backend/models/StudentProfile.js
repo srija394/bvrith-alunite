@@ -28,6 +28,14 @@ const studentProfileSchema = new mongoose.Schema(
     photoKey: { type: String },
     resumeKey: { type: String },
     resumeName: { type: String },
+    achievements: [
+      {
+        title: { type: String, required: true, trim: true },
+        description: { type: String, trim: true, maxlength: 500 },
+        date: { type: Date },
+        link: { type: String, trim: true },
+      },
+    ],
     certificates: [
       {
         key: { type: String },

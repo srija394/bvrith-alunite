@@ -109,6 +109,20 @@ export default function ViewProfile() {
               <p className="bio-text">{profile.bio}</p>
             </div>
           )}
+
+          {/* Achievements */}
+          <AchievementsSection
+            achievements={profile.achievements || []}
+            onAdd={async (data) => {
+              const res = await API.post("/profile/me/achievements", data);
+              setProfile((p) => ({ ...p, achievements: res.data.achievements }));
+            }}
+            onDelete={async (id) => {
+              const res = await API.delete(`/profile/me/achievements/${id}`);
+              setProfile((p) => ({ ...p, achievements: res.data.achievements }));
+            }}
+            editable={true}
+          />
         </div>
       </div>
     </>
@@ -124,3 +138,80 @@ function Detail({ label, value }) {
     </div>
   );
 }
+
+function AchievementsSection({ achievements, onAdd, onDelete, editable }) {
+  const [showForm, setShowForm] = React.useState(false);
+  const [form, setForm] = React.useState({ title: "", description: "", date: "", link: "" });
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      await onAdd(form);
+      setForm({ title: "", description: "", date: "", link: "" });
+      setShowForm(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to add achievement");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="profile-section">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+        <h3>🏆 Achievements</h3>
+        {editable && (
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            style={{ background: "#0f3460", color: "#fff", border: "none", borderRadius: "7px", padding: "0.3rem 0.85rem", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer" }}
+          >
+            {showForm ? "Cancel" : "+ Add"}
+          </button>
+        )}
+      </div>
+
+      {editable && showForm && (
+        <form onSubmit={handleAdd} style={{ background: "#f8fafc", borderRadius: "10px", padding: "1rem", marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          {error && <div style={{ color: "#dc2626", fontSize: "0.85rem" }}>{error}</div>}
+          <input required placeholder="Title *" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} style={{ padding: "0.45rem 0.75rem", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "0.875rem" }} />
+          <textarea placeholder="Description (optional)" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={2} maxLength={500} style={{ padding: "0.45rem 0.75rem", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "0.875rem", resize: "vertical" }} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <input type="date" placeholder="Date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} style={{ padding: "0.45rem 0.75rem", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "0.875rem" }} />
+            <input placeholder="Link (optional)" value={form.link} onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))} style={{ padding: "0.45rem 0.75rem", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "0.875rem" }} />
+          </div>
+          <button type="submit" disabled={saving} style={{ background: "#16a34a", color: "#fff", border: "none", borderRadius: "7px", padding: "0.5rem", fontWeight: 600, cursor: "pointer" }}>
+            {saving ? "Saving..." : "Save Achievement"}
+          </button>
+        </form>
+      )}
+
+      {achievements.length === 0 ? (
+        <p style={{ color: "#aaa", fontSize: "0.875rem" }}>No achievements added yet.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          {achievements.map((a) => (
+            <div key={a._id} style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "10px", padding: "0.85rem 1rem", position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <strong style={{ color: "#1a1a2e", fontSize: "0.9rem" }}>{a.title}</strong>
+                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                  {a.date && <span style={{ fontSize: "0.75rem", color: "#888" }}>{new Date(a.date).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</span>}
+                  {editable && (
+                    <button onClick={() => onDelete(a._id)} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.85rem", padding: 0 }} title="Delete">✕</button>
+                  )}
+                </div>
+              </div>
+              {a.description && <p style={{ margin: "0.3rem 0 0", fontSize: "0.85rem", color: "#555" }}>{a.description}</p>}
+              {a.link && <a href={a.link} target="_blank" rel="noreferrer" style={{ fontSize: "0.8rem", color: "#0f3460", marginTop: "0.25rem", display: "inline-block" }}>🔗 View</a>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export { AchievementsSection };

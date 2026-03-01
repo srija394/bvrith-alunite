@@ -23,6 +23,8 @@ const eventSchema = new mongoose.Schema(
     ],
     maxAttendees: { type: Number, default: null }, // null = unlimited
     bannerColor: { type: String, default: "#0f3460" }, // fallback banner color
+    bannerKey: { type: String },   // S3 key for uploaded banner image
+    bannerUrl: { type: String },   // public/signed URL for display
   },
   { timestamps: true }
 );

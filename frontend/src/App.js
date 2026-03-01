@@ -25,6 +25,8 @@ import EventDetail from "./pages/EventDetail";
 import MyFiles from "./pages/MyFiles";
 import ForumPage from "./pages/ForumPage";
 import ForumPostPage from "./pages/ForumPostPage";
+import JobsPage from "./pages/JobsPage";
+import JobDetail from "./pages/JobDetail";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -70,6 +72,9 @@ function App() {
           <Route path="/profile/create" element={<ProtectedRoute allowedRoles={["student","alumni"]}><CreateProfile /></ProtectedRoute>} />
           <Route path="/profile/edit" element={<ProtectedRoute allowedRoles={["student","alumni"]}><EditProfile /></ProtectedRoute>} />
           <Route path="/profile/view" element={<ProtectedRoute allowedRoles={["student","alumni"]}><ViewProfile /></ProtectedRoute>} />
+
+          <Route path="/jobs" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><JobsPage /></ProtectedRoute>} />
+          <Route path="/jobs/:id" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><JobDetail /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

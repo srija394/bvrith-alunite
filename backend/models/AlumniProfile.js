@@ -23,6 +23,14 @@ const alumniProfileSchema = new mongoose.Schema(
     // Graduation document (marksheet / degree cert) — for admin approval
     graduationDocKey: { type: String },
     graduationDocName: { type: String },
+    achievements: [
+      {
+        title: { type: String, required: true, trim: true },
+        description: { type: String, trim: true, maxlength: 500 },
+        date: { type: Date },
+        link: { type: String, trim: true },
+      },
+    ],
     certificates: [
       {
         key: { type: String },

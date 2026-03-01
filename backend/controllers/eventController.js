@@ -1,4 +1,15 @@
 const Event = require("../models/Event");
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const s3 = require("../config/s3");
+
+async function signedBannerUrl(key) {
+  if (!key) return null;
+  try {
+    const cmd = new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key });
+    return await getSignedUrl(s3, cmd, { expiresIn: 3600 });
+  } catch { return null; }
+}
 
 // ─── GET all events (with optional filter) ────────────────
 exports.getAllEvents = async (req, res) => {
@@ -17,13 +28,14 @@ exports.getAllEvents = async (req, res) => {
 
     // Attach isRegistered for logged-in user
     const userId = req.user?.id;
-    const enriched = events.map((e) => {
+    const enriched = await Promise.all(events.map(async (e) => {
       const obj = e.toJSON();
       obj.isRegistered = userId
         ? e.registrations.some((r) => r.user?.toString() === userId)
         : false;
+      if (e.bannerKey) obj.bannerUrl = await signedBannerUrl(e.bannerKey);
       return obj;
-    });
+    }));
 
     res.json({ events: enriched });
   } catch (err) {
@@ -45,6 +57,7 @@ exports.getEvent = async (req, res) => {
     obj.isRegistered = req.user
       ? event.registrations.some((r) => r.user?._id?.toString() === req.user.id)
       : false;
+    if (event.bannerKey) obj.bannerUrl = await signedBannerUrl(event.bannerKey);
 
     res.json({ event: obj });
   } catch (err) {

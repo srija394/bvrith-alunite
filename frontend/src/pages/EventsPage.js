@@ -193,7 +193,13 @@ function EventCard({ event, user, onRegister, onDelete, registering, isPast, for
   return (
     <div className="event-card" onClick={() => navigate(`/events/${event._id}`)}>
       {/* Banner */}
-      <div className="event-banner" style={{ background: event.bannerColor || "#0f3460" }}>
+      <div
+        className="event-banner"
+        style={event.bannerUrl
+          ? { backgroundImage: `url(${event.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+          : { background: event.bannerColor || "#0f3460" }
+        }
+      >
         <span className="event-category-icon">{CATEGORY_ICONS[event.category] || "📅"}</span>
         <span className="event-mode-badge">{event.mode}</span>
         {isPast && <span className="event-past-badge">Past</span>}
@@ -256,6 +262,16 @@ function CreateEventModal({ onClose, onCreated }) {
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  const [bannerFile, setBannerFile] = React.useState(null);
+  const [bannerPreview, setBannerPreview] = React.useState(null);
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setBannerFile(file);
+    setBannerPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -263,7 +279,20 @@ function CreateEventModal({ onClose, onCreated }) {
     try {
       const payload = { ...form, maxAttendees: form.maxAttendees ? Number(form.maxAttendees) : null };
       const { data } = await API.post("/events", payload);
-      onCreated({ ...data.event, isRegistered: false, registrationCount: 0 });
+      let createdEvent = { ...data.event, isRegistered: false, registrationCount: 0 };
+
+      // Upload banner if selected
+      if (bannerFile) {
+        try {
+          const fd = new FormData();
+          fd.append("eventBanner", bannerFile);
+          fd.append("eventId", data.event._id);
+          const bannerRes = await API.post("/upload/event-banner", fd, { headers: { "Content-Type": "multipart/form-data" } });
+          createdEvent.bannerUrl = bannerRes.data.url;
+        } catch { /* banner upload failure is non-fatal */ }
+      }
+
+      onCreated(createdEvent);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create event");
     } finally {
@@ -338,13 +367,25 @@ function CreateEventModal({ onClose, onCreated }) {
             </div>
           )}
 
+          <div className="form-row">
+            <div className="form-group full">
+              <label>Banner Image <span style={{ color: "#888", fontWeight: 400 }}>(optional, JPG/PNG, max 5MB)</span></label>
+              {bannerPreview && (
+                <div style={{ marginBottom: "0.5rem", borderRadius: "8px", overflow: "hidden", height: "100px" }}>
+                  <img src={bannerPreview} alt="Banner preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              )}
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleBannerChange} />
+            </div>
+          </div>
+
           <div className="form-row two-col">
             <div className="form-group">
               <label>Max Attendees (leave blank = unlimited)</label>
               <input type="number" value={form.maxAttendees} onChange={set("maxAttendees")} min={1} placeholder="e.g. 100" />
             </div>
             <div className="form-group">
-              <label>Banner Color</label>
+              <label>Banner Color <span style={{ color: "#888", fontWeight: 400 }}>(fallback if no image)</span></label>
               <div className="color-picker">
                 {BANNER_COLORS.map((c) => (
                   <button

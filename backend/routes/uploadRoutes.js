@@ -5,6 +5,7 @@ const {
   uploadCertificate,
   uploadPhoto,
   uploadGraduationDoc,
+  uploadEventBanner,
   handleUploadError,
 } = require("../middleware/uploadMiddleware");
 const {
@@ -12,6 +13,7 @@ const {
   uploadCertificate: handleCertificate,
   uploadPhoto: handlePhoto,
   uploadGraduationDoc: handleGradDoc,
+  uploadEventBanner: handleEventBanner,
   getMyFiles,
   deleteCertificate,
 } = require("../controllers/uploadController");
@@ -56,6 +58,14 @@ router.post(
   protect(["alumni"]),
   (req, res, next) => uploadGraduationDoc.single("graduationDoc")(req, res, (err) => handleUploadError(err, req, res, next)),
   handleGradDoc
+);
+
+// Event banner — alumni and admin only
+router.post(
+  "/event-banner",
+  protect(["alumni", "admin"]),
+  (req, res, next) => uploadEventBanner.single("eventBanner")(req, res, (err) => handleUploadError(err, req, res, next)),
+  handleEventBanner
 );
 
 module.exports = router;

@@ -193,3 +193,39 @@ exports.uploadGraduationDoc = async (req, res) => {
     res.status(500).json({ message: "Upload failed" });
   }
 };
+
+// ─── POST /api/upload/event-banner (alumni + admin) ───────
+exports.uploadEventBanner = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    if (!["alumni", "admin"].includes(req.user.role)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const Event = require("../models/Event");
+    const { eventId } = req.body;
+    if (!eventId) return res.status(400).json({ message: "eventId is required" });
+
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Only owner or admin can update banner
+    const isOwner = event.createdBy.toString() === req.user.id;
+    if (!isOwner && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    // Delete old banner if exists
+    if (event.bannerKey) await deleteS3Object(event.bannerKey);
+
+    event.bannerKey = req.file.key;
+    event.bannerUrl = req.file.location || null;
+    await event.save();
+
+    const url = await signedUrl(req.file.key);
+    res.json({ message: "Event banner uploaded", url, key: req.file.key });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Upload failed" });
+  }
+};

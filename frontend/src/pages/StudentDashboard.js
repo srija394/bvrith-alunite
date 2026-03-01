@@ -60,6 +60,7 @@ export default function StudentDashboard() {
     { icon: "🗓️", label: "Events",             desc: "Upcoming college talks, workshops & reunions",     path: "/events" },
     { icon: "🗨️", label: "Discussion Forum",   desc: "Ask questions, get answers from alumni",          path: "/forum" },
     { icon: "📁", label: "My Files",            desc: "Resume, certificates and documents",              path: "/my-files" },
+    { icon: "💼", label: "Jobs & Internships",   desc: "Opportunities posted by BVRITH alumni",            path: "/jobs",             highlight: true },
   ];
 
   return (

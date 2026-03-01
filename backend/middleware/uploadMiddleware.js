@@ -58,4 +58,6 @@ function handleUploadError(err, req, res, next) {
   next();
 }
 
-module.exports = { uploadResume, uploadCertificate, uploadPhoto, uploadGraduationDoc, handleUploadError };
+const uploadEventBanner = makeUploader("event_banners", ALLOWED.photo, 5);
+
+module.exports = { uploadResume, uploadCertificate, uploadPhoto, uploadGraduationDoc, uploadEventBanner, handleUploadError };
