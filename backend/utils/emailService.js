@@ -205,3 +205,23 @@ exports.sendEventCreatedAdminEmail = async (adminEmail, event, creatorEmail) => 
   html
 );
 };
+
+// 11. Graduation conversion notification (to newly converted alumni)
+exports.sendGraduationConversionEmail = async (to, fullName, graduationYear) => {
+  const html = wrap("🎓 You've Been Graduated!", `
+    <p>Hi ${fullName || "there"}! 🎉</p>
+    <p>Congratulations on completing your journey at <strong>BVRIT Hyderabad</strong>!</p>
+    <p>Your account on <strong>BVRITH Alunite</strong> has been transitioned to <span class="badge">Alumni</span> status for the <strong>Class of ${graduationYear}</strong>.</p>
+    <div class="highlight-box">
+      <strong>What's next?</strong><br/><br/>
+      <ol style="margin:0; padding-left:20px; line-height:2;">
+        <li>Log in to your account — you'll now see the <strong>Alumni Dashboard</strong></li>
+        <li>Upload your <strong>Graduation Document</strong> (marksheet or degree certificate)</li>
+        <li>Wait for <strong>Admin Approval</strong> — you'll get an email once approved</li>
+        <li>Start mentoring current students and giving back to BVRIT! 🙌</li>
+      </ol>
+    </div>
+    <p style="font-size:13px; color:#888;">Your existing messages, mentorship history, and achievements are all safely preserved.</p>
+  `);
+  await sendEmail(to, `🎓 Welcome to Alumni — Class of ${graduationYear} | BVRITH Alunite`, html);
+};

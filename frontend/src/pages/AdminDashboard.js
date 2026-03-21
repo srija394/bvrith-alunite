@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import "./AdminPanel.css";
+import ConversionTab from "./ConversionTab";
 
 // Helper — trigger a CSV file download from an API route
 function downloadCSV(endpoint, filename) {
@@ -28,6 +29,7 @@ const TABS = [
   { id: "mentorship",    label: "🤝 Mentorship" },
   { id: "events",        label: "🗓️ Events" },
   { id: "announcements", label: "📣 Announcements" },
+  { id: "conversion",    label: "🎓 Conversions" },
 ];
 
 export default function AdminDashboard() {
@@ -62,6 +64,7 @@ export default function AdminDashboard() {
           {activeTab === "mentorship"    && <MentorshipTab />}
           {activeTab === "events"        && <EventsTab />}
           {activeTab === "announcements" && <AnnouncementsTab />}
+          {activeTab === "conversion"    && <ConversionTab />}
         </div>
       </div>
     </>

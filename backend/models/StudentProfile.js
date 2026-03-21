@@ -1,3 +1,6 @@
+// backend/models/StudentProfile.js
+// UPDATED — added isGraduated and graduatedAt fields for bulk conversion support
+
 const mongoose = require("mongoose");
 
 const studentProfileSchema = new mongoose.Schema(
@@ -44,8 +47,18 @@ const studentProfileSchema = new mongoose.Schema(
         uploadedAt: { type: Date, default: Date.now },
       },
     ],
+
+    // ── Graduation / Conversion fields (NEW) ──────────────────────────────
+    // Set to true after admin bulk-converts this student to alumni
+    // StudentProfile is NEVER deleted — this flag marks the transition
+    isGraduated: { type: Boolean, default: false, index: true },
+    // Timestamp when the conversion was executed (for rollback safety window)
+    graduatedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
+
+// Compound index for fast graduation-year + branch queries used in conversion
+studentProfileSchema.index({ graduationYear: 1, branch: 1, isGraduated: 1 });
 
 module.exports = mongoose.model("StudentProfile", studentProfileSchema);
