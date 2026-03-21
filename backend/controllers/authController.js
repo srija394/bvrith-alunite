@@ -171,3 +171,75 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// ─── GET /api/auth/me ─────────────────────────────────────────────────────────
+// Returns current user info including the needsEmailUpdate flag so the
+// alumni dashboard knows whether to show the email-update banner.
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select(
+      "email role isApproved needsEmailUpdate"
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({
+      email: user.email,
+      role: user.role,
+      isApproved: user.isApproved,
+      needsEmailUpdate: user.needsEmailUpdate,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── PUT /api/auth/update-email ───────────────────────────────────────────────
+// Alumni call this to swap their college email for a personal one.
+// Clears needsEmailUpdate once done.
+exports.updateEmail = async (req, res) => {
+  try {
+    const { newEmail } = req.body;
+    if (!newEmail || !newEmail.includes("@"))
+      return res.status(400).json({ message: "A valid email address is required" });
+
+    // Reject if it still looks like a college address
+    const collegeDomains = ["bvrit.ac.in", "bvrith.ac.in"];
+    const domain = newEmail.split("@")[1]?.toLowerCase();
+    if (collegeDomains.includes(domain)) {
+      return res.status(400).json({
+        message:
+          "Please enter a personal email address, not your college email.",
+      });
+    }
+
+    // Ensure the email isn't already taken by someone else
+    const conflict = await User.findOne({
+      email: newEmail,
+      _id: { $ne: req.user.id },
+    });
+    if (conflict)
+      return res
+        .status(409)
+        .json({ message: "This email is already registered to another account" });
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: { email: newEmail, needsEmailUpdate: false } },
+      { new: true }
+    ).select("email role isApproved");
+
+    // Issue a fresh JWT with the updated email so the client stays in sync
+    const token = jwt.sign(
+      { id: user._id, role: user.role, email: user.email, isApproved: user.isApproved },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      message: "Email updated successfully",
+      email: user.email,
+      token,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -159,13 +159,13 @@ exports.bulkConvert = async (req, res) => {
     // 3a. Bulk insert AlumniProfiles (insertMany is atomic per document)
     await AlumniProfile.insertMany(alumniInsertDocs, { session, ordered: false });
 
-    // 3b. Bulk update Users: role → alumni, isApproved → false
+    // 3b. Bulk update Users: role → alumni, isApproved → false, needsEmailUpdate → true
     await User.bulkWrite(
       userIdsToUpdate.map((id) => ({
         updateOne: {
           filter: { _id: id },
           update: {
-            $set: { role: "alumni", isApproved: false },
+            $set: { role: "alumni", isApproved: false, needsEmailUpdate: true },
           },
         },
       })),
@@ -275,7 +275,7 @@ exports.rollbackConversion = async (req, res) => {
       rollbackIds.map((id) => ({
         updateOne: {
           filter: { _id: id },
-          update: { $set: { role: "student", isApproved: true } },
+          update: { $set: { role: "student", isApproved: true, needsEmailUpdate: false } },
         },
       })),
       { session }

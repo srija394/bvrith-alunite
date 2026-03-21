@@ -42,7 +42,13 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  // Set to true when a student is bulk-converted to alumni so the dashboard
+  // can prompt them to swap their college email for a personal one.
+  needsEmailUpdate: {
+    type: Boolean,
+    default: false,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

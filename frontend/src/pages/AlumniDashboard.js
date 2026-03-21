@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import EmailUpdateBanner from "../components/EmailUpdateBanner";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 import "./Dashboard.css";
 
 export default function AlumniDashboard() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
   const [stats, setStats] = useState({
@@ -38,6 +39,9 @@ export default function AlumniDashboard() {
   }, [isApproved]);
 
   useEffect(() => {
+    // Sync user flags (e.g. needsEmailUpdate) from the server on every dashboard visit
+    refreshUser();
+
     API.get("/admin/announcements?role=alumni")
       .then((r) => setAnnouncements(r.data.announcements.slice(0, 3)))
       .catch(() => {});
@@ -47,7 +51,7 @@ export default function AlumniDashboard() {
     // Poll every 30 seconds for real-time updates
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
-  }, [fetchStats]);
+  }, [fetchStats, refreshUser]);
 
   const STATS = [
     { icon: "🎓", label: "Graduation Year",    value: stats.graduationYear ?? "Not set" },
@@ -81,6 +85,9 @@ export default function AlumniDashboard() {
             <div className="header-badge alumni-badge">Alumni Portal</div>
           </div>
         </header>
+
+        {/* Email update prompt — shown after student→alumni bulk conversion */}
+        <EmailUpdateBanner />
 
         {/* Pending Approval Banner */}
         {!isApproved && (
