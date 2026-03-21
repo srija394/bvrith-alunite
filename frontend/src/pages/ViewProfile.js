@@ -103,7 +103,15 @@ export default function ViewProfile() {
             <div className="profile-section">
               <h3>Skills</h3>
               <div className="skills-list">
-                {profile.skills.map((s) => <span key={s} className="skill-tag">{s}</span>)}
+                {profile.skills.map((s, i) => {
+                  const name  = typeof s === "object" ? s.name  : s;
+                  const level = typeof s === "object" ? s.level : null;
+                  return (
+                    <span key={i} className="skill-tag" title={level || ""}>
+                      {name}{level && <span style={{ opacity: 0.65, fontSize: "0.75em", marginLeft: "3px" }}>· {level[0]}</span>}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}

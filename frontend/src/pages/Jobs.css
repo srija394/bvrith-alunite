@@ -308,3 +308,68 @@
   margin-bottom: 1rem;
   display: inline-block;
 }
+
+/* ── Skill level badge on job cards ──────────────────────── */
+.skill-level-badge {
+  display: inline-block;
+  margin-left: 4px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 4px;
+  padding: 0 3px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
+/* ── Matched students list ────────────────────────────────── */
+.matched-students-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.matched-student-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.matched-student-row:hover {
+  border-color: #0f3460;
+  box-shadow: 0 2px 8px rgba(15,52,96,0.07);
+}
+
+.matched-rank {
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #9ca3af;
+  min-width: 26px;
+  text-align: center;
+}
+
+.matched-info {
+  flex: 1;
+  min-width: 0;
+}
+.matched-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.matched-meta {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 0.1rem;
+  display: flex;
+  gap: 0.35rem;
+}

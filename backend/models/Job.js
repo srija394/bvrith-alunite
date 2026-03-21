@@ -12,14 +12,30 @@ const jobSchema = new mongoose.Schema(
     location: { type: String, trim: true },
     mode: { type: String, enum: ["remote", "onsite", "hybrid"], default: "onsite" },
     description: { type: String, required: true, maxlength: 3000 },
+
+    // ── Skills required — plain names only, no level (NEW) ──────────────
+    // Levels belong to the student's profile, not the job posting.
     skillsRequired: [{ type: String, trim: true }],
-    stipend: { type: String, trim: true },       // e.g. "₹15,000/month" or "Unpaid"
-    salary: { type: String, trim: true },         // for full-time jobs
-    duration: { type: String, trim: true },       // e.g. "3 months" for internships
-    applyLink: { type: String, trim: true },      // external apply URL
-    deadline: { type: Date },
-    postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    isActive: { type: Boolean, default: true },
+
+    // ── Skill-based matched students (NEW) ──────────────────────────────
+    matchedStudents: [
+      {
+        studentId:    { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        score:        { type: Number },
+        matchedCount: { type: Number }, // how many required skills the student has
+        fullName:     { type: String },
+        branch:       { type: String },
+        cgpa:         { type: Number },
+      },
+    ],
+
+    stipend:   { type: String, trim: true },
+    salary:    { type: String, trim: true },
+    duration:  { type: String, trim: true },
+    applyLink: { type: String, trim: true },
+    deadline:  { type: Date },
+    postedBy:  { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    isActive:  { type: Boolean, default: true },
   },
   { timestamps: true }
 );

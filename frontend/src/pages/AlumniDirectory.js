@@ -290,9 +290,10 @@ function AlumniCard({ alumni, navigate }) {
 
       {alumni.skills?.length > 0 && (
         <div className="card-skills">
-          {alumni.skills.slice(0, 4).map((s) => (
-            <span key={s} className="card-skill">{s}</span>
-          ))}
+          {alumni.skills.slice(0, 4).map((s, i) => {
+            const name = typeof s === "object" ? s.name : s;
+            return <span key={i} className="card-skill">{name}</span>;
+          })}
           {alumni.skills.length > 4 && (
             <span className="card-skill more">+{alumni.skills.length - 4}</span>
           )}

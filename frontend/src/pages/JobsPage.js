@@ -5,29 +5,92 @@ import API from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import "./Jobs.css";
 
-const MODES = ["remote", "onsite", "hybrid"];
+const MODES   = ["remote", "onsite", "hybrid"];
 
 function daysLeft(deadline) {
   if (!deadline) return null;
-  const diff = Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24));
-  return diff;
+  return Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24));
 }
 
+// ── Simple skill tag input for job postings (name only, no level) ────────────
+function SkillTagInput({ skills, onChange }) {
+  const [input, setInput] = useState("");
+
+  const addSkill = () => {
+    const name = input.trim();
+    if (!name) return;
+    // Support comma-separated entry
+    const entries = name.split(",").map((s) => s.trim()).filter(Boolean);
+    const newSkills = [...skills];
+    for (const entry of entries) {
+      if (!newSkills.some((s) => s.toLowerCase() === entry.toLowerCase())) {
+        newSkills.push(entry);
+      }
+    }
+    onChange(newSkills);
+    setInput("");
+  };
+
+  const removeSkill = (idx) => onChange(skills.filter((_, i) => i !== idx));
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+      {skills.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+          {skills.map((name, i) => (
+            <span key={i} style={{
+              display: "inline-flex", alignItems: "center", gap: "0.3rem",
+              background: "#e0e7ff", color: "#3730a3",
+              borderRadius: "20px", padding: "0.25rem 0.7rem",
+              fontSize: "0.82rem", fontWeight: 700,
+            }}>
+              {name}
+              <button
+                type="button"
+                onClick={() => removeSkill(i)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", fontWeight: 900, padding: 0, lineHeight: 1 }}
+              >✕</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <input
+          style={{ flex: 1, padding: "0.4rem 0.7rem", border: "1.5px solid #ddd", borderRadius: "7px", fontSize: "0.875rem", outline: "none" }}
+          placeholder="e.g. React, Node.js, MongoDB"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
+        />
+        <button
+          type="button"
+          onClick={addSkill}
+          style={{ padding: "0.4rem 0.9rem", background: "#0f3460", color: "#fff", border: "none", borderRadius: "7px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}
+        >+ Add</button>
+      </div>
+      <p style={{ fontSize: "0.78rem", color: "#9ca3af", margin: 0 }}>
+        Students with any of these skills will be auto-ranked by their expertise level.
+      </p>
+    </div>
+  );
+}
+
+// ── Main JobsPage ────────────────────────────────────────────────────────────
 export default function JobsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const canPost = user?.role === "alumni" || user?.role === "admin";
 
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs]             = useState([]);
   const [pagination, setPagination] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState("");
   const [showCreate, setShowCreate] = useState(false);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch]         = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [modeFilter, setModeFilter] = useState("");
-  const [page, setPage] = useState(1);
+  const [page, setPage]             = useState(1);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
@@ -67,7 +130,6 @@ export default function JobsPage() {
       <Navbar />
       <div className="jobs-container">
 
-        {/* Header */}
         <div className="jobs-header">
           <div>
             <h1>💼 Jobs & Internships</h1>
@@ -83,7 +145,6 @@ export default function JobsPage() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="jobs-filters">
           <input
             className="jobs-search"
@@ -103,12 +164,8 @@ export default function JobsPage() {
           {pagination && <span className="jobs-count">{pagination.total} posting{pagination.total !== 1 ? "s" : ""}</span>}
         </div>
 
-        {/* Content */}
         {loading ? (
-          <div className="jobs-loading">
-            <div className="ev-spinner" />
-            <p>Loading opportunities...</p>
-          </div>
+          <div className="jobs-loading"><div className="ev-spinner" /><p>Loading opportunities...</p></div>
         ) : error ? (
           <div className="jobs-error">{error}</div>
         ) : jobs.length === 0 ? (
@@ -135,7 +192,7 @@ export default function JobsPage() {
                       {job.location && <span className="job-meta-item">📍 {job.location}</span>}
                       <span className="job-meta-item">💻 {job.mode}</span>
                       {job.stipend && <span className="job-meta-item">💰 {job.stipend}</span>}
-                      {job.salary && <span className="job-meta-item">💰 {job.salary}</span>}
+                      {job.salary  && <span className="job-meta-item">💰 {job.salary}</span>}
                       {job.duration && <span className="job-meta-item">⏱ {job.duration}</span>}
                     </div>
 
@@ -143,8 +200,8 @@ export default function JobsPage() {
 
                     {job.skillsRequired?.length > 0 && (
                       <div className="job-skills">
-                        {job.skillsRequired.slice(0, 4).map((s) => (
-                          <span key={s} className="job-skill-tag">{s}</span>
+                        {job.skillsRequired.slice(0, 4).map((s, i) => (
+                          <span key={i} className="job-skill-tag">{s}</span>
                         ))}
                         {job.skillsRequired.length > 4 && (
                           <span className="job-skill-tag">+{job.skillsRequired.length - 4}</span>
@@ -174,7 +231,6 @@ export default function JobsPage() {
               })}
             </div>
 
-            {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
               <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "2rem" }}>
                 <button className="btn-back" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Prev</button>
@@ -196,14 +252,15 @@ export default function JobsPage() {
   );
 }
 
+// ── CreateJobModal ───────────────────────────────────────────────────────────
 function CreateJobModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
     title: "", company: "", type: "internship", location: "",
-    mode: "onsite", description: "", skillsRequired: "",
+    mode: "onsite", description: "", skillsRequired: [],
     stipend: "", salary: "", duration: "", applyLink: "", deadline: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error,   setError]   = useState("");
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -212,13 +269,7 @@ function CreateJobModal({ onClose, onCreated }) {
     setLoading(true);
     setError("");
     try {
-      const payload = {
-        ...form,
-        skillsRequired: form.skillsRequired
-          ? form.skillsRequired.split(",").map((s) => s.trim()).filter(Boolean)
-          : [],
-        deadline: form.deadline || null,
-      };
+      const payload = { ...form, deadline: form.deadline || null };
       const { data } = await API.post("/jobs", payload);
       onCreated(data.job);
     } catch (err) {
@@ -286,10 +337,19 @@ function CreateJobModal({ onClose, onCreated }) {
             </div>
           </div>
 
+          {/* ── Structured skill requirements ── */}
           <div className="form-row">
             <div className="form-group full">
-              <label>Skills Required <span style={{ color: "#888", fontWeight: 400 }}>(comma-separated)</span></label>
-              <input value={form.skillsRequired} onChange={set("skillsRequired")} placeholder="e.g. React, Node.js, MongoDB" />
+              <label>
+                Skills Required
+                <span style={{ color: "#888", fontWeight: 400, fontSize: "0.82rem", marginLeft: "0.4rem" }}>
+                  — students are auto-ranked by their expertise level
+                </span>
+              </label>
+              <SkillTagInput
+                skills={form.skillsRequired}
+                onChange={(updated) => setForm((f) => ({ ...f, skillsRequired: updated }))}
+              />
             </div>
           </div>
 

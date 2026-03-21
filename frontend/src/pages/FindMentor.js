@@ -199,9 +199,13 @@ function MentorCard({ rec, onRequest, navigate, getScoreColor, getScoreLabel }) 
       {/* Skills */}
       {profile.skills?.length > 0 && (
         <div className="mentor-skills">
-          {profile.skills.slice(0, 5).map((s) => (
-            <span key={s} className="skill-chip">{s}</span>
-          ))}
+          {profile.skills.slice(0, 5).map((s, i) => {
+            const name  = typeof s === "object" ? s.name  : s;
+            const level = typeof s === "object" ? s.level : null;
+            return (
+              <span key={i} className="skill-chip" title={level || ""}>{name}</span>
+            );
+          })}
           {profile.skills.length > 5 && (
             <span className="skill-chip more">+{profile.skills.length - 5}</span>
           )}

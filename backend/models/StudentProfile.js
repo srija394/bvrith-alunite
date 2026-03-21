@@ -23,7 +23,12 @@ const studentProfileSchema = new mongoose.Schema(
     phone: { type: String, trim: true },
     linkedIn: { type: String, trim: true },
     github: { type: String, trim: true },
-    skills: [{ type: String, trim: true }],
+    skills: [
+      {
+        name:  { type: String, trim: true, required: true },
+        level: { type: String, enum: ["Beginner", "Intermediate", "Advanced"], default: "Beginner" },
+      },
+    ],
     bio: { type: String, maxlength: 500 },
     cgpa: { type: Number, min: 0, max: 10 },
     graduationYear: { type: Number },

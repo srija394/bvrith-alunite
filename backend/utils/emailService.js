@@ -225,3 +225,17 @@ exports.sendGraduationConversionEmail = async (to, fullName, graduationYear) => 
   `);
   await sendEmail(to, `🎓 Welcome to Alumni — Class of ${graduationYear} | BVRITH Alunite`, html);
 };
+
+// 12. Notify a student they matched a job posting
+exports.sendJobMatchEmail = async (to, fullName, jobTitle, company, matchedCount, jobId) => {
+  const html = wrap("💼 Your Skills Match a New Job!", `
+    <p>Hi ${fullName || "there"}! 👋</p>
+    <p>Your skill profile matches a new opportunity on <strong>BVRITH Alunite</strong>.</p>
+    <div class="highlight-box">
+      <strong>💼 ${jobTitle}</strong> at <strong>${company}</strong><br/><br/>
+      You have <span class="badge">${matchedCount} matching skill${matchedCount !== 1 ? "s" : ""}</span> for this role.
+    </div>
+    <p>Log in and head to <strong>Jobs &amp; Internships</strong> to view full details and apply.</p>
+  `);
+  await sendEmail(to, `💼 Your skills match "${jobTitle}" — BVRITH Alunite`, html);
+};

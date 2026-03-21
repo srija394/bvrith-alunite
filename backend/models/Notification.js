@@ -20,6 +20,7 @@ const notificationSchema = new mongoose.Schema(
         "announcement",
         "alumni_approved",
         "job_posted",
+        "job",
         "system",
       ],
       required: true,

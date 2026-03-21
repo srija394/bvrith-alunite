@@ -106,3 +106,83 @@
     grid-column: 1;
   }
 }
+
+/* ── Skill Builder (student profile) ─────────────────────────── */
+.skill-builder { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.skill-tags-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.skill-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  flex-wrap: wrap;
+}
+
+.skill-tag-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  min-width: 80px;
+}
+
+.skill-level-select {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+.skill-level-select:focus { border-color: #0f3460; }
+
+.skill-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  padding: 0 0.25rem;
+  transition: color 0.15s;
+}
+.skill-remove-btn:hover { color: #dc2626; }
+
+.skill-add-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.skill-name-input {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.45rem 0.75rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  outline: none;
+}
+.skill-name-input:focus { border-color: #0f3460; }
+
+.skill-add-btn {
+  padding: 0.45rem 1rem;
+  background: #0f3460;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.skill-add-btn:hover { background: #e94560; }

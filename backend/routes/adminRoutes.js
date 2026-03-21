@@ -19,6 +19,9 @@ const {
   exportUsers,
   exportMentorship,
   exportEvents,
+  getAllJobsAdmin,
+  getJobMatchesAdmin,
+  exportJobMatches,
 } = require("../controllers/adminController");
 
 const router = express.Router();
@@ -56,5 +59,10 @@ router.get("/analytics", adminOnly, getAnalytics);
 router.get("/export/users", adminOnly, exportUsers);
 router.get("/export/mentorship", adminOnly, exportMentorship);
 router.get("/export/events", adminOnly, exportEvents);
+
+// Jobs — admin view + matched students + CSV export
+router.get("/jobs", adminOnly, getAllJobsAdmin);
+router.get("/jobs/:id/matches", adminOnly, getJobMatchesAdmin);
+router.get("/jobs/:id/export-matches", adminOnly, exportJobMatches);
 
 module.exports = router;

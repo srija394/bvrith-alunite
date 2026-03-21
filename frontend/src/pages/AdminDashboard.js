@@ -29,6 +29,7 @@ const TABS = [
   { id: "mentorship",    label: "🤝 Mentorship" },
   { id: "events",        label: "🗓️ Events" },
   { id: "announcements", label: "📣 Announcements" },
+  { id: "jobs",          label: "💼 Jobs" },
   { id: "conversion",    label: "🎓 Conversions" },
 ];
 
@@ -64,6 +65,7 @@ export default function AdminDashboard() {
           {activeTab === "mentorship"    && <MentorshipTab />}
           {activeTab === "events"        && <EventsTab />}
           {activeTab === "announcements" && <AnnouncementsTab />}
+          {activeTab === "jobs"          && <JobsTab />}
           {activeTab === "conversion"    && <ConversionTab />}
         </div>
       </div>
@@ -309,7 +311,10 @@ function AlumniReviewModal({ userId, onClose, onApprove, onReject, busy }) {
               </div>
               {data.profile.skills?.length > 0 && (
                 <div className="review-skills">
-                  {data.profile.skills.map((s) => <span key={s} className="skill-tag">{s}</span>)}
+                  {data.profile.skills.map((s, i) => {
+                    const name = typeof s === "object" ? s.name : s;
+                    return <span key={i} className="skill-tag">{name}</span>;
+                  })}
                 </div>
               )}
               {data.profile.bio && <p className="review-bio">"{data.profile.bio}"</p>}
@@ -644,6 +649,301 @@ function AnnouncementsTab() {
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════ TAB 7 — Jobs ══════════ */
+function JobsTab() {
+  const [jobs, setJobs]               = useState([]);
+  const [total, setTotal]             = useState(0);
+  const [loading, setLoading]         = useState(true);
+  const [search, setSearch]           = useState("");
+  const [typeFilter, setTypeFilter]   = useState("");
+  const [page, setPage]               = useState(1);
+  const [totalPages, setTotalPages]   = useState(1);
+
+  // Expanded job id → matched students data
+  const [expanded, setExpanded]       = useState(null); // jobId
+  const [matches, setMatches]         = useState({});   // { [jobId]: {matchedStudents, totalMatched} }
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [rerunning, setRerunning]     = useState(null); // jobId being rerun
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page, limit: 15 });
+      if (search.trim()) params.set("search", search.trim());
+      if (typeFilter) params.set("type", typeFilter);
+      const { data } = await API.get(`/admin/jobs?${params}`);
+      setJobs(data.jobs);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+    } catch { /* silently fail */ }
+    finally { setLoading(false); }
+  }, [page, search, typeFilter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const toggleExpand = async (jobId) => {
+    if (expanded === jobId) { setExpanded(null); return; }
+    setExpanded(jobId);
+    if (matches[jobId]) return; // already loaded
+    setMatchLoading(true);
+    try {
+      const { data } = await API.get(`/admin/jobs/${jobId}/matches`);
+      setMatches((m) => ({ ...m, [jobId]: data }));
+    } catch { alert("Failed to load matched students"); }
+    finally { setMatchLoading(false); }
+  };
+
+  const handleRerun = async (jobId) => {
+    setRerunning(jobId);
+    try {
+      await API.post(`/jobs/${jobId}/matches/rerun`);
+      // Reload the fresh matches
+      const { data } = await API.get(`/admin/jobs/${jobId}/matches`);
+      setMatches((m) => ({ ...m, [jobId]: data }));
+      // Refresh the job list count too
+      await load();
+    } catch { alert("Re-run failed"); }
+    finally { setRerunning(null); }
+  };
+
+  const downloadMatches = (jobId, jobTitle) => {
+    const token = localStorage.getItem("token");
+    const safeName = jobTitle.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    fetch(`http://localhost:5000/api/admin/jobs/${jobId}/export-matches`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.message || "Export failed");
+        }
+        return r.blob();
+      })
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `eligible_students_${safeName}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch((e) => alert(e.message));
+  };
+
+  const SCORE_COLOR = (score) => {
+    if (score >= 6) return "#15803d";
+    if (score >= 3) return "#f59e0b";
+    return "#6b7280";
+  };
+
+  const formatDate = (d) => d
+    ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    : "—";
+
+  return (
+    <div>
+      {/* Toolbar */}
+      <div className="tab-toolbar">
+        <h2 className="tab-title">
+          Job Postings <span className="count-badge">{total}</span>
+        </h2>
+        <div className="toolbar-right">
+          <input
+            className="admin-search"
+            placeholder="Search title or company..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            style={{ padding: "0.45rem 0.8rem", border: "1.5px solid #ddd", borderRadius: "8px", fontSize: "0.875rem", outline: "none", minWidth: "200px" }}
+          />
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+            style={{ padding: "0.45rem 0.7rem", border: "1.5px solid #ddd", borderRadius: "8px", fontSize: "0.875rem", background: "#fff", cursor: "pointer" }}
+          >
+            <option value="">All Types</option>
+            <option value="job">Full-time Jobs</option>
+            <option value="internship">Internships</option>
+          </select>
+        </div>
+      </div>
+
+      {loading ? <Loader /> : jobs.length === 0 ? (
+        <div className="empty-state">💼 No job postings found.</div>
+      ) : (
+        <>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {jobs.map((job) => {
+              const isOpen = expanded === job._id;
+              const jobMatches = matches[job._id];
+              const dl = job.deadline
+                ? Math.ceil((new Date(job.deadline) - new Date()) / (1000 * 60 * 60 * 24))
+                : null;
+
+              return (
+                <div key={job._id} style={{
+                  border: "1.5px solid #e2e8f0",
+                  borderRadius: "12px",
+                  background: "#fff",
+                  overflow: "hidden",
+                  boxShadow: isOpen ? "0 2px 12px rgba(15,52,96,0.08)" : "none",
+                  transition: "box-shadow 0.2s",
+                }}>
+                  {/* Job header row */}
+                  <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                    {/* Left: title + meta */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                        <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#1a1a2e" }}>{job.title}</span>
+                        <span style={{
+                          background: job.type === "job" ? "#e0e7ff" : "#fef3c7",
+                          color: job.type === "job" ? "#3730a3" : "#92400e",
+                          borderRadius: "12px", padding: "0.1rem 0.55rem",
+                          fontSize: "0.72rem", fontWeight: 700,
+                        }}>{job.type === "job" ? "Full-time" : "Internship"}</span>
+                        {!job.isActive && (
+                          <span style={{ background: "#fee2e2", color: "#dc2626", borderRadius: "12px", padding: "0.1rem 0.55rem", fontSize: "0.72rem", fontWeight: 700 }}>Inactive</span>
+                        )}
+                      </div>
+                      <div style={{ color: "#555", fontSize: "0.82rem", marginTop: "0.2rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                        <span>🏢 {job.company}</span>
+                        {job.location && <span>📍 {job.location}</span>}
+                        <span>💻 {job.mode}</span>
+                        <span>Posted by {job.postedBy}</span>
+                        <span>📅 {formatDate(job.createdAt)}</span>
+                        {dl !== null && (
+                          <span style={{ color: dl > 0 ? (dl < 7 ? "#e94560" : "#16a34a") : "#9ca3af" }}>
+                            {dl > 0 ? `⏳ ${dl}d left` : "⛔ Expired"}
+                          </span>
+                        )}
+                      </div>
+                      {job.skillsRequired?.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.4rem" }}>
+                          {job.skillsRequired.map((s, i) => (
+                            <span key={i} style={{ background: "#f1f5f9", color: "#374151", borderRadius: "10px", padding: "0.1rem 0.5rem", fontSize: "0.72rem", fontWeight: 600 }}>{s}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: match count + actions */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}>
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontWeight: 900, fontSize: "1.3rem", color: "#0f3460" }}>{job.matchedCount}</div>
+                        <div style={{ fontSize: "0.7rem", color: "#888" }}>eligible</div>
+                      </div>
+                      <button
+                        onClick={() => toggleExpand(job._id)}
+                        style={{
+                          padding: "0.4rem 0.9rem",
+                          background: isOpen ? "#0f3460" : "#f1f5f9",
+                          color: isOpen ? "#fff" : "#0f3460",
+                          border: "1.5px solid #0f3460",
+                          borderRadius: "8px",
+                          fontWeight: 700,
+                          fontSize: "0.82rem",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {isOpen ? "▲ Hide" : "▼ View Students"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded matched students panel */}
+                  {isOpen && (
+                    <div style={{ borderTop: "1.5px solid #f0f4f8", background: "#f8fafc", padding: "1rem 1.25rem" }}>
+                      {/* Panel toolbar */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                        <span style={{ fontWeight: 700, color: "#374151", fontSize: "0.9rem" }}>
+                          🎯 Eligible Students
+                          {jobMatches && (
+                            <span style={{ marginLeft: "0.5rem", fontWeight: 400, color: "#888", fontSize: "0.82rem" }}>
+                              — {jobMatches.totalMatched} student{jobMatches.totalMatched !== 1 ? "s" : ""} ranked by expertise
+                            </span>
+                          )}
+                        </span>
+                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <button
+                            onClick={() => handleRerun(job._id)}
+                            disabled={rerunning === job._id}
+                            style={{ padding: "0.35rem 0.8rem", background: "#fff", border: "1.5px solid #cbd5e1", borderRadius: "7px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer" }}
+                          >
+                            {rerunning === job._id ? "Re-running…" : "🔄 Re-run"}
+                          </button>
+                          <button
+                            onClick={() => downloadMatches(job._id, job.title)}
+                            style={{ padding: "0.35rem 0.8rem", background: "#16a34a", color: "#fff", border: "none", borderRadius: "7px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer" }}
+                          >
+                            ⬇ Download CSV
+                          </button>
+                        </div>
+                      </div>
+
+                      {matchLoading && !jobMatches ? (
+                        <Loader />
+                      ) : !jobMatches || jobMatches.totalMatched === 0 ? (
+                        <div style={{ textAlign: "center", padding: "1.5rem", color: "#888" }}>
+                          <span style={{ fontSize: "1.75rem" }}>🔍</span>
+                          <p style={{ marginTop: "0.4rem", fontSize: "0.875rem" }}>No eligible students yet — students need matching skills in their profile.</p>
+                        </div>
+                      ) : (
+                        <div className="admin-table-wrap">
+                          <table className="admin-table">
+                            <thead>
+                              <tr>
+                                <th>Rank</th>
+                                <th>Name</th>
+                                <th>Branch</th>
+                                <th>CGPA</th>
+                                <th>Skills Matched</th>
+                                <th>Expertise Score</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {jobMatches.matchedStudents.map((s, i) => (
+                                <tr key={s.studentId}>
+                                  <td style={{ fontWeight: 700, color: "#9ca3af" }}>#{i + 1}</td>
+                                  <td style={{ fontWeight: 600 }}>{s.fullName}</td>
+                                  <td>{s.branch}</td>
+                                  <td>{s.cgpa != null ? Number(s.cgpa).toFixed(1) : "—"}</td>
+                                  <td>
+                                    <span style={{ background: "#e0e7ff", color: "#3730a3", borderRadius: "10px", padding: "0.15rem 0.6rem", fontSize: "0.78rem", fontWeight: 700 }}>
+                                      {s.matchedCount} skill{s.matchedCount !== 1 ? "s" : ""}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span style={{ fontWeight: 900, fontSize: "1rem", color: SCORE_COLOR(s.score) }}>
+                                      {s.score}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "1.5rem" }}>
+              <button className="btn-admin-secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Prev</button>
+              <span style={{ padding: "0.45rem 1rem", color: "#555", fontSize: "0.875rem" }}>Page {page} of {totalPages}</span>
+              <button className="btn-admin-secondary" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next →</button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

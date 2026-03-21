@@ -5,6 +5,7 @@ const MentorshipRequest = require("../models/MentorshipRequest");
 const Event = require("../models/Event");
 const Message = require("../models/Message");
 const Announcement = require("../models/Announcement");
+const Job = require("../models/Job");
 const { createNotification } = require("../utils/notificationHelper");
 
 // ─── GET overview stats ───────────────────────────────────
@@ -584,3 +585,115 @@ exports.getAnalytics = async (req, res) => {
   }
 };
 
+// ─── GET /api/admin/jobs ──────────────────────────────────
+// All job postings with matched student counts — for admin Jobs tab
+exports.getAllJobsAdmin = async (req, res) => {
+  try {
+    const { search = "", type = "", page = 1, limit = 20 } = req.query;
+    const query = {};
+    if (type) query.type = type;
+    if (search.trim()) {
+      const r = new RegExp(search.trim(), "i");
+      query.$or = [{ title: r }, { company: r }];
+    }
+
+    const pageNum  = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [jobs, total] = await Promise.all([
+      Job.find(query)
+        .select("title company type mode location skillsRequired matchedStudents isActive deadline postedBy createdAt")
+        .populate("postedBy", "email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Job.countDocuments(query),
+    ]);
+
+    const enriched = await Promise.all(jobs.map(async (j) => {
+      const ap = await AlumniProfile.findOne({ user: j.postedBy._id }).select("fullName").lean();
+      return {
+        _id:            j._id,
+        title:          j.title,
+        company:        j.company,
+        type:           j.type,
+        mode:           j.mode,
+        location:       j.location,
+        skillsRequired: j.skillsRequired,
+        matchedCount:   j.matchedStudents?.length ?? 0,
+        isActive:       j.isActive,
+        deadline:       j.deadline,
+        postedBy:       ap?.fullName || j.postedBy?.email || "",
+        createdAt:      j.createdAt,
+      };
+    }));
+
+    res.json({ jobs: enriched, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
+  } catch (err) {
+    console.error("[adminController.getAllJobsAdmin]", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── GET /api/admin/jobs/:id/matches ─────────────────────
+// Matched students for a specific job (admin view)
+exports.getJobMatchesAdmin = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id)
+      .select("title company skillsRequired matchedStudents");
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    res.json({
+      jobId:           job._id,
+      jobTitle:        job.title,
+      company:         job.company,
+      skillsRequired:  job.skillsRequired,
+      matchedStudents: job.matchedStudents,
+      totalMatched:    job.matchedStudents.length,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── GET /api/admin/jobs/:id/export-matches ───────────────
+// Download matched students as CSV for a specific job
+exports.exportJobMatches = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id)
+      .select("title company skillsRequired matchedStudents");
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    const rows = job.matchedStudents;
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No matched students to export" });
+    }
+
+    const fields = [
+      { label: "Rank",           value: (_, i) => i + 1 },
+      { label: "Full Name",      value: (r) => r.fullName || "" },
+      { label: "Branch",         value: (r) => r.branch || "" },
+      { label: "CGPA",           value: (r) => r.cgpa != null ? r.cgpa : "" },
+      { label: "Skills Matched", value: (r) => r.matchedCount ?? "" },
+      { label: "Expertise Score",value: (r) => r.score ?? "" },
+    ];
+
+    // toCSV with index support
+    const escape = (v) => {
+      if (v === null || v === undefined) return "";
+      const s = String(v).replace(/"/g, '""');
+      return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s}"` : s;
+    };
+    const header = fields.map((f) => f.label).join(",");
+    const body   = rows.map((row, i) => fields.map((f) => escape(f.value(row, i))).join(",")).join("\n");
+    const csv    = header + "\n" + body;
+
+    const safeName = job.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    sendCSV(res, `matched_students_${safeName}_${Date.now()}.csv`, csv);
+  } catch (err) {
+    console.error("[adminController.exportJobMatches]", err);
+    res.status(500).json({ message: "Export failed" });
+  }
+};

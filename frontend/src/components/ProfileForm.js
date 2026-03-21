@@ -3,10 +3,85 @@ import { useAuth } from "../context/AuthContext";
 import "./ProfileForm.css";
 
 const BRANCHES = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "AIDS", "AIML", "CSD"];
+const LEVELS   = ["Beginner", "Intermediate", "Advanced"];
 
+// ── Skill builder — used only for student profiles ──────────────────────────
+function SkillBuilder({ skills, onChange }) {
+  const [newName,  setNewName]  = useState("");
+  const [newLevel, setNewLevel] = useState("Beginner");
+
+  const addSkill = () => {
+    const name = newName.trim();
+    if (!name) return;
+    if (skills.some((s) => s.name.toLowerCase() === name.toLowerCase())) return; // dedupe
+    onChange([...skills, { name, level: newLevel }]);
+    setNewName("");
+    setNewLevel("Beginner");
+  };
+
+  const removeSkill = (idx) => onChange(skills.filter((_, i) => i !== idx));
+
+  const updateLevel = (idx, level) =>
+    onChange(skills.map((s, i) => (i === idx ? { ...s, level } : s)));
+
+  const levelColor = { Beginner: "#3b82f6", Intermediate: "#f59e0b", Advanced: "#16a34a" };
+
+  return (
+    <div className="skill-builder">
+      {/* Existing skills */}
+      {skills.length > 0 && (
+        <div className="skill-tags-wrap">
+          {skills.map((sk, i) => (
+            <div key={i} className="skill-tag-row">
+              <span className="skill-tag-name">{sk.name}</span>
+              <select
+                className="skill-level-select"
+                value={sk.level}
+                onChange={(e) => updateLevel(i, e.target.value)}
+                style={{ borderColor: levelColor[sk.level] }}
+              >
+                {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <button type="button" className="skill-remove-btn" onClick={() => removeSkill(i)}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add new skill */}
+      <div className="skill-add-row">
+        <input
+          className="skill-name-input"
+          placeholder="Skill name (e.g. React, DSA)"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
+        />
+        <select
+          className="skill-level-select"
+          value={newLevel}
+          onChange={(e) => setNewLevel(e.target.value)}
+        >
+          {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+        </select>
+        <button type="button" className="skill-add-btn" onClick={addSkill}>+ Add</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main ProfileForm ─────────────────────────────────────────────────────────
 export default function ProfileForm({ initial = {}, onSubmit, loading }) {
   const { user } = useAuth();
   const isAlumni = user?.role === "alumni";
+
+  // Normalise incoming skills — could be [{name,level}] or ["React","Node"]
+  const normaliseSkills = (raw) => {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((s) =>
+      typeof s === "string" ? { name: s, level: "Beginner" } : s
+    );
+  };
 
   const [form, setForm] = useState({
     fullName: "",
@@ -16,7 +91,6 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     linkedIn: "",
     github: "",
     bio: "",
-    skills: "",
     profilePhoto: "",
     // student only
     year: "",
@@ -32,8 +106,13 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     portfolioUrl: "",
     webinarTopics: "",
     ...initial,
-    skills: Array.isArray(initial.skills) ? initial.skills.join(", ") : (initial.skills || ""),
-    webinarTopics: Array.isArray(initial.webinarTopics) ? initial.webinarTopics.join(", ") : (initial.webinarTopics || ""),
+    // Skills: always structured array for students, plain string comma-list for alumni
+    skills: isAlumni
+      ? (Array.isArray(initial.skills) ? initial.skills.join(", ") : (initial.skills || ""))
+      : normaliseSkills(initial.skills),
+    webinarTopics: Array.isArray(initial.webinarTopics)
+      ? initial.webinarTopics.join(", ")
+      : (initial.webinarTopics || ""),
     availableForTalks: initial.availableForTalks || false,
   });
 
@@ -46,8 +125,13 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     e.preventDefault();
     const payload = {
       ...form,
-      skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      webinarTopics: form.webinarTopics ? form.webinarTopics.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      // Students send [{name, level}]; alumni send plain string array (backwards compat)
+      skills: isAlumni
+        ? form.skills.split(",").map((s) => s.trim()).filter(Boolean)
+        : form.skills, // already structured array
+      webinarTopics: form.webinarTopics
+        ? form.webinarTopics.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
     };
     onSubmit(payload);
   };
@@ -142,15 +226,30 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
 
         {/* ── Skills ── */}
         <div className="form-group full-width">
-          <label>Skills <span className="hint">(comma-separated)</span></label>
-          <input name="skills" value={form.skills} onChange={handleChange} placeholder="React, Node.js, Python, MongoDB" />
+          {isAlumni ? (
+            <>
+              <label>Skills <span className="hint">(comma-separated)</span></label>
+              <input name="skills" value={form.skills} onChange={handleChange} placeholder="React, Node.js, Python, MongoDB" />
+            </>
+          ) : (
+            <>
+              <label>
+                Skills & Expertise
+                <span className="hint"> — add each skill with your proficiency level</span>
+              </label>
+              <SkillBuilder
+                skills={Array.isArray(form.skills) ? form.skills : []}
+                onChange={(updated) => setForm((f) => ({ ...f, skills: updated }))}
+              />
+            </>
+          )}
         </div>
 
         {/* ── Bio ── */}
         <div className="form-group full-width">
           <label>Bio <span className="hint">(max 500 chars)</span></label>
           <textarea name="bio" value={form.bio} onChange={handleChange} rows={3} maxLength={500} placeholder="A short description about yourself..." />
-          <span className="char-count">{form.bio.length}/500</span>
+          <span className="char-count">{(form.bio || "").length}/500</span>
         </div>
 
         {/* ── Alumni mentorship + talks toggles ── */}
@@ -170,21 +269,11 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
             </div>
             <div className="form-group">
               <label>Portfolio / Personal Website</label>
-              <input
-                name="portfolioUrl"
-                value={form.portfolioUrl || ""}
-                onChange={handleChange}
-                placeholder="https://yourportfolio.com"
-              />
+              <input name="portfolioUrl" value={form.portfolioUrl || ""} onChange={handleChange} placeholder="https://yourportfolio.com" />
             </div>
             <div className="form-group">
-              <label>Webinar / Talk Topics <span style={{color:"#888",fontWeight:400}}>(comma-separated)</span></label>
-              <input
-                name="webinarTopics"
-                value={form.webinarTopics || ""}
-                onChange={handleChange}
-                placeholder="e.g. System Design, DSA, Cloud Computing"
-              />
+              <label>Webinar / Talk Topics <span style={{ color: "#888", fontWeight: 400 }}>(comma-separated)</span></label>
+              <input name="webinarTopics" value={form.webinarTopics || ""} onChange={handleChange} placeholder="e.g. System Design, DSA, Cloud Computing" />
             </div>
           </>
         )}

@@ -90,7 +90,10 @@ export default function PublicAlumniProfile() {
             <div className="profile-section">
               <h3>Skills</h3>
               <div className="skills-list">
-                {profile.skills.map((s) => <span key={s} className="skill-tag">{s}</span>)}
+                {profile.skills.map((s, i) => {
+                  const name = typeof s === "object" ? s.name : s;
+                  return <span key={i} className="skill-tag">{name}</span>;
+                })}
               </div>
             </div>
           )}
