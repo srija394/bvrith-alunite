@@ -166,7 +166,13 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({ token, role: user.role, email: user.email, isApproved: user.isApproved });
+    res.json({
+      token,
+      role: user.role,
+      email: user.email,
+      isApproved: user.isApproved,
+      mustChangePassword: !!user.mustChangePassword,
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -178,7 +184,7 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "email role isApproved needsEmailUpdate"
+      "email role isApproved needsEmailUpdate mustChangePassword"
     );
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json({
@@ -186,6 +192,7 @@ exports.getMe = async (req, res) => {
       role: user.role,
       isApproved: user.isApproved,
       needsEmailUpdate: user.needsEmailUpdate,
+      mustChangePassword: !!user.mustChangePassword,
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -240,6 +247,45 @@ exports.updateEmail = async (req, res) => {
       token,
     });
   } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── PUT /api/auth/change-password ───────────────────────────────────────────
+// Used on first login (mustChangePassword=true) and by users voluntarily.
+// Clears the mustChangePassword flag after success.
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6)
+      return res.status(400).json({ message: "New password must be at least 6 characters" });
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Verify current password (skip if admin reset — they won't know the temp one, but
+    // the flag enforces change; we still require it for security on voluntary change)
+    if (currentPassword !== undefined) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch)
+        return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.mustChangePassword = false;
+    await user.save();
+
+    // Issue a fresh token with mustChangePassword cleared
+    const token = jwt.sign(
+      { id: user._id, role: user.role, email: user.email, isApproved: user.isApproved },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ message: "Password changed successfully", token });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

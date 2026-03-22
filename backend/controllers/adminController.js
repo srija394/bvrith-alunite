@@ -699,3 +699,95 @@ exports.exportJobMatches = async (req, res) => {
     res.status(500).json({ message: "Export failed" });
   }
 };
+// ─── POST /api/admin/users/bulk-create ────────────────────────────────────────
+// Accepts a JSON array of { email, role, name? } and creates accounts with
+// a random temp password. Returns a result list including temp passwords so
+// the admin can download them.
+exports.bulkCreateUsers = async (req, res) => {
+  try {
+    const { users } = req.body; // [{ email, role, name? }]
+
+    if (!Array.isArray(users) || users.length === 0)
+      return res.status(400).json({ message: "Provide a non-empty users array" });
+
+    const bcrypt = require("bcryptjs");
+    const { sendAdminCreatedEmail } = require("../utils/emailService");
+    const StudentProfile = require("../models/StudentProfile");
+    const AlumniProfile  = require("../models/AlumniProfile");
+    const User           = require("../models/User");
+
+    const results = [];
+
+    for (const entry of users) {
+      const email = entry.email?.trim().toLowerCase();
+      const role  = entry.role?.trim().toLowerCase();
+      const name  = entry.name?.trim() || "";
+
+      if (!email || !["student", "alumni"].includes(role)) {
+        results.push({ email, status: "skipped", reason: "Invalid email or role" });
+        continue;
+      }
+
+      const existing = await User.findOne({ email });
+      if (existing) {
+        results.push({ email, role, status: "skipped", reason: "Email already registered" });
+        continue;
+      }
+
+      // Use the fixed default password — user is forced to change on first login
+      const tempPassword = "Bvrit@Hyd";
+      const hashed = await bcrypt.hash(tempPassword, 10);
+
+      const user = await User.create({
+        email,
+        password: hashed,
+        role,
+        isEmailVerified: true,          // admin-created — no OTP needed
+        isApproved: role !== "alumni",  // alumni still need profile review? keep consistent
+        mustChangePassword: true,       // force change on first login
+        isActive: true,
+      });
+
+      // Create a minimal profile stub with the name if provided
+      if (name) {
+        if (role === "student") {
+          await StudentProfile.create({ user: user._id, fullName: name }).catch(() => {});
+        } else {
+          await AlumniProfile.create({ user: user._id, fullName: name }).catch(() => {});
+        }
+      }
+
+      // Send welcome email with temp password
+      await sendAdminCreatedEmail(email, role, name, tempPassword).catch(() => {});
+
+      results.push({ email, role, name, status: "created", tempPassword });
+    }
+
+    res.json({ message: "Bulk creation complete", results });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── POST /api/admin/users/:userId/reset-password ────────────────────────────
+// Generates a new temp password, sets mustChangePassword=true.
+exports.resetUserPassword = async (req, res) => {
+  try {
+    const bcrypt = require("bcryptjs");
+    const User   = require("../models/User");
+
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const tempPassword = "Bvrit@Hyd";
+    user.password = await bcrypt.hash(tempPassword, 10);
+    user.mustChangePassword = true;
+    await user.save();
+
+    res.json({ message: "Password reset", tempPassword });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

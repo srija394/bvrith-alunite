@@ -1,20 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 import "./Auth.css";
-
-function initializeGoogleRegister(clientId, onToken) {
-  if (!window.google) return;
-  window.google.accounts.id.initialize({
-    client_id: clientId,
-    callback: (response) => onToken(response.credential),
-  });
-  window.google.accounts.id.renderButton(
-    document.getElementById("google-register-btn"),
-    { theme: "outline", size: "large", width: "100%", text: "signup_with" }
-  );
-}
 
 export default function Register() {
   const navigate = useNavigate();
@@ -24,22 +12,16 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "student",
     adminCode: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showAdminCode, setShowAdminCode] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
-    if (name === "role") {
-      setShowAdminCode(value === "admin");
-      setError("");
-    }
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -49,11 +31,9 @@ export default function Register() {
 
     if (form.password !== form.confirmPassword)
       return setError("Passwords do not match");
-
     if (form.password.length < 6)
       return setError("Password must be at least 6 characters");
-
-    if (form.role === "admin" && !form.adminCode.trim())
+    if (!form.adminCode.trim())
       return setError("Admin secret code is required");
 
     setLoading(true);
@@ -61,7 +41,7 @@ export default function Register() {
       await API.post("/auth/register", {
         email: form.email,
         password: form.password,
-        role: form.role,
+        role: "admin",
         adminCode: form.adminCode,
       });
       setSuccess("OTP sent to your email! Redirecting...");
@@ -70,44 +50,6 @@ export default function Register() {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const googleEnabled = !!process.env.REACT_APP_GOOGLE_CLIENT_ID;
-
-  useEffect(() => {
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    if (!clientId) return;
-    if (!document.getElementById("google-gsi-script")) {
-      const script = document.createElement("script");
-      script.id = "google-gsi-script";
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => initializeGoogleRegister(clientId, handleGoogleToken);
-      document.head.appendChild(script);
-    } else if (window.google) {
-      initializeGoogleRegister(clientId, handleGoogleToken);
-    }
-  // eslint-disable-next-line
-  }, []);
-
-  const handleGoogleToken = async (idToken) => {
-    setGoogleLoading(true);
-    setError("");
-    try {
-      const { data } = await API.post("/auth/google", { idToken });
-      if (data.needsRoleSelection) {
-        navigate("/google/select-role", { state: { tempToken: data.tempToken, email: data.email } });
-        return;
-      }
-      login(data.token, data.role, data.email);
-      if (data.role === "alumni") navigate("/dashboard/alumni");
-      else navigate("/dashboard/student");
-    } catch (err) {
-      setError(err.response?.data?.message || "Google sign-up failed.");
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -120,19 +62,14 @@ export default function Register() {
           <p>Alumni &amp; Student Portal</p>
         </div>
 
-        <h2>Create Account</h2>
-        <p className="auth-subtitle">Join the BVRITH community</p>
+        <h2>Admin Registration</h2>
+        <p className="auth-subtitle">
+          This page is for admin account creation only.<br />
+          Student and alumni accounts are created by the admin.
+        </p>
 
         {error   && <div className="auth-error">{error}</div>}
         {success && <div className="auth-success">{success}</div>}
-        {googleLoading && <div className="auth-info">Completing Google sign-up…</div>}
-
-        {googleEnabled && (
-          <>
-            <div id="google-register-btn" className="google-btn-container" />
-            <div className="auth-divider"><span>or register with email</span></div>
-          </>
-        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -141,40 +78,28 @@ export default function Register() {
               id="email"
               type="email"
               name="email"
-              placeholder="you@bvrith.edu"
+              placeholder="admin@bvrith.edu"
               value={form.email}
               onChange={handleChange}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="role">I am a...</label>
-            <select id="role" name="role" value={form.role} onChange={handleChange}>
-              <option value="student">Student</option>
-              <option value="alumni">Alumni</option>
-              <option value="admin">Admin</option>
-            </select>
+          <div className="form-group admin-code-group">
+            <label htmlFor="adminCode">🔐 Admin Secret Code</label>
+            <input
+              id="adminCode"
+              type="password"
+              name="adminCode"
+              placeholder="Enter the admin secret code"
+              value={form.adminCode}
+              onChange={handleChange}
+              autoComplete="off"
+            />
+            <span className="admin-code-hint">
+              Provided by your institution's IT department
+            </span>
           </div>
-
-          {/* Admin secret code — only shown when Admin is selected */}
-          {showAdminCode && (
-            <div className="form-group admin-code-group">
-              <label htmlFor="adminCode">🔐 Admin Secret Code</label>
-              <input
-                id="adminCode"
-                type="password"
-                name="adminCode"
-                placeholder="Enter secret code provided by institution"
-                value={form.adminCode}
-                onChange={handleChange}
-                autoComplete="off"
-              />
-              <span className="admin-code-hint">
-                This code is provided by your institution's IT department
-              </span>
-            </div>
-          )}
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -203,7 +128,7 @@ export default function Register() {
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? "Creating account..." : "Create Admin Account"}
           </button>
         </form>
 

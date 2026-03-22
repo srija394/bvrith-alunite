@@ -93,6 +93,30 @@ exports.sendWelcomeEmail = async (to, role) => {
   await sendEmail(to, "🎓 Welcome to BVRITH Alunite!", html);
 };
 
+
+// 2b. Welcome email for admin-created accounts (includes temp password)
+exports.sendAdminCreatedEmail = async (to, role, name, tempPassword) => {
+  const displayName = name || to.split("@")[0];
+  const html = wrap("Welcome to BVRITH Alunite!", `
+    <p>Hi ${displayName}! 👋</p>
+    <p>Your <strong>BVRITH Alunite</strong> account has been created by the admin. You can now log in to the portal.</p>
+    <div class="highlight-box">
+      <strong>Your login details:</strong><br/><br/>
+      <strong>Email:</strong> ${to}<br/>
+      <strong>Temporary Password:</strong> <span style="font-size:1.1em;font-weight:700;letter-spacing:0.05em">${tempPassword}</span><br/><br/>
+      <span style="color:#e94560">⚠️ You will be required to set a new password when you first log in.</span>
+    </div>
+    <div class="highlight-box" style="margin-top:1rem">
+      <strong>Your role:</strong> <span class="badge">${role.charAt(0).toUpperCase() + role.slice(1)}</span><br/><br/>
+      ${role === "student"
+        ? "You can find mentors, browse the alumni directory, message alumni, register for events, and upload your resume."
+        : "You can mentor students, respond to mentorship requests, create events, and connect with the BVRITH community."}
+    </div>
+    <p>Visit the portal and log in to get started!</p>
+  `);
+  await sendEmail(to, "🎓 Your BVRITH Alunite Account is Ready", html);
+};
+
 // 3. Mentorship request received (to alumni)
 exports.sendMentorshipRequestEmail = async (alumniEmail, studentName, studentEmail, matchScore) => {
   const html = wrap("New Mentorship Request", `

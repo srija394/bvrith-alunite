@@ -581,3 +581,56 @@
   background: #dcfce7;
   border-color: #16a34a;
 }
+
+/* ── Bulk Create & Reset Password ───────────────── */
+.btn-admin-primary {
+  background: #0f3460;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-admin-primary:hover { background: #16213e; }
+
+.btn-admin-sm.active-mode {
+  background: #0f3460;
+  color: #fff;
+  border-color: #0f3460;
+}
+
+.btn-action.reset-pw {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+.btn-action.reset-pw:hover { background: #fef3c7; }
+
+.reset-pw-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+}
+.reset-pw-banner code {
+  background: #fef3c7;
+  padding: 0.15rem 0.5rem;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.bulk-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}

@@ -127,6 +127,7 @@ function UsersTab() {
   const [total, setTotal]           = useState(0);
   const [busy, setBusy]             = useState(null);
   const [reviewId, setReviewId]     = useState(null);
+  const [showBulkCreate, setShowBulkCreate] = useState(false);
 
   const fetchUsers = async (pg = page) => {
     setLoading(true);
@@ -179,6 +180,13 @@ function UsersTab() {
           busy={busy}
         />
       )}
+      {showBulkCreate && (
+        <BulkCreateModal
+          onClose={() => setShowBulkCreate(false)}
+          onDone={() => { setShowBulkCreate(false); fetchUsers(); }}
+        />
+      )}
+
       <div className="tab-toolbar">
         <h2 className="tab-title">User Management <span className="count-badge">{total}</span></h2>
         <div className="toolbar-right">
@@ -193,6 +201,9 @@ function UsersTab() {
           </select>
           <button className="btn-export" onClick={() => downloadCSV("/admin/export/users", "users.csv")}>
             ⬇️ Export CSV
+          </button>
+          <button className="btn-admin-primary" onClick={() => setShowBulkCreate(true)}>
+            ➕ Create Accounts
           </button>
         </div>
       </div>
@@ -264,6 +275,209 @@ function UsersTab() {
     </div>
   );
 }
+
+/* ── Bulk Create Accounts Modal ── */
+function BulkCreateModal({ onClose, onDone }) {
+  const [mode, setMode]       = useState("csv");   // "csv" | "manual"
+  const [csvText, setCsvText] = useState("");
+  const [rows, setRows]       = useState([{ email: "", role: "student", name: "" }]);
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+
+  // Parse pasted CSV text into rows
+  const parseCSV = (text) => {
+    const lines = text.trim().split("\n").filter(Boolean);
+    return lines.map((line) => {
+      const [email = "", role = "student", name = ""] = line.split(",").map((s) => s.trim());
+      return { email, role: ["student","alumni"].includes(role) ? role : "student", name };
+    });
+  };
+
+  const addRow = () => setRows((r) => [...r, { email: "", role: "student", name: "" }]);
+  const removeRow = (i) => setRows((r) => r.filter((_, idx) => idx !== i));
+  const updateRow = (i, field, val) =>
+    setRows((r) => r.map((row, idx) => idx === i ? { ...row, [field]: val } : row));
+
+  const handleSubmit = async () => {
+    setError("");
+    const users = mode === "csv" ? parseCSV(csvText) : rows;
+    const valid = users.filter((u) => u.email && u.role);
+    if (valid.length === 0) return setError("No valid entries to create");
+    setLoading(true);
+    try {
+      const { data } = await API.post("/admin/users/bulk-create", { users: valid });
+      setResults(data.results);
+    } catch (e) {
+      setError(e.response?.data?.message || "Bulk creation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Download the results as CSV so admin can distribute passwords
+  const downloadResults = () => {
+    const created = results.filter((r) => r.status === "created");
+    const csv = ["Email,Role,Name,Temp Password",
+      ...created.map((r) => `${r.email},${r.role},${r.name || ""},${r.tempPassword}`)
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = "new_accounts.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box bulk-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "680px", width: "95%" }}>
+        <div className="modal-header">
+          <h2>➕ Create Accounts</h2>
+          <button className="btn-modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        {!results ? (
+          <>
+            {/* Mode toggle */}
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+              <button
+                className={`btn-admin-sm ${mode === "csv" ? "active-mode" : ""}`}
+                onClick={() => setMode("csv")}
+              >📋 Paste CSV</button>
+              <button
+                className={`btn-admin-sm ${mode === "manual" ? "active-mode" : ""}`}
+                onClick={() => setMode("manual")}
+              >✏️ Manual Entry</button>
+            </div>
+
+            {mode === "csv" ? (
+              <div className="form-group">
+                <label style={{ fontWeight: 600 }}>Paste CSV rows</label>
+                <p style={{ fontSize: "0.8rem", color: "#888", marginBottom: "0.4rem" }}>
+                  Format: <code>email, role, name</code> — one per line. Role must be <code>student</code> or <code>alumni</code>.
+                </p>
+                <textarea
+                  rows={8}
+                  style={{ width: "100%", fontFamily: "monospace", fontSize: "0.85rem", padding: "0.6rem", borderRadius: "6px", border: "1.5px solid #e5e7eb", resize: "vertical" }}
+                  placeholder={"john@bvrith.edu, student, John Smith\njane@bvrith.edu, alumni, Jane Doe"}
+                  value={csvText}
+                  onChange={(e) => setCsvText(e.target.value)}
+                />
+              </div>
+            ) : (
+              <div style={{ maxHeight: "320px", overflowY: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th style={{ padding: "0.4rem", textAlign: "left" }}>Email</th>
+                      <th style={{ padding: "0.4rem", textAlign: "left" }}>Role</th>
+                      <th style={{ padding: "0.4rem", textAlign: "left" }}>Name (optional)</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, i) => (
+                      <tr key={i}>
+                        <td style={{ padding: "0.3rem" }}>
+                          <input
+                            type="email"
+                            value={row.email}
+                            onChange={(e) => updateRow(i, "email", e.target.value)}
+                            placeholder="email@bvrith.edu"
+                            style={{ width: "100%", padding: "0.3rem 0.5rem", borderRadius: "5px", border: "1px solid #d1d5db" }}
+                          />
+                        </td>
+                        <td style={{ padding: "0.3rem" }}>
+                          <select
+                            value={row.role}
+                            onChange={(e) => updateRow(i, "role", e.target.value)}
+                            style={{ padding: "0.3rem 0.5rem", borderRadius: "5px", border: "1px solid #d1d5db" }}
+                          >
+                            <option value="student">Student</option>
+                            <option value="alumni">Alumni</option>
+                          </select>
+                        </td>
+                        <td style={{ padding: "0.3rem" }}>
+                          <input
+                            type="text"
+                            value={row.name}
+                            onChange={(e) => updateRow(i, "name", e.target.value)}
+                            placeholder="Full name"
+                            style={{ width: "100%", padding: "0.3rem 0.5rem", borderRadius: "5px", border: "1px solid #d1d5db" }}
+                          />
+                        </td>
+                        <td style={{ padding: "0.3rem" }}>
+                          <button onClick={() => removeRow(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#e94560" }}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <button className="btn-admin-sm" onClick={addRow} style={{ marginTop: "0.5rem" }}>+ Add Row</button>
+              </div>
+            )}
+
+            {error && <div className="auth-error" style={{ marginTop: "0.75rem" }}>{error}</div>}
+
+            <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem", justifyContent: "flex-end" }}>
+              <button className="btn-modal-reject" onClick={onClose}>Cancel</button>
+              <button className="btn-modal-approve" onClick={handleSubmit} disabled={loading}>
+                {loading ? "Creating..." : "Create Accounts"}
+              </button>
+            </div>
+          </>
+        ) : (
+          /* Results view */
+          <>
+            <div style={{ marginBottom: "1rem" }}>
+              <span style={{ color: "#16a34a", fontWeight: 600 }}>
+                ✅ {results.filter((r) => r.status === "created").length} created
+              </span>
+              {results.filter((r) => r.status === "skipped").length > 0 && (
+                <span style={{ color: "#d97706", fontWeight: 600, marginLeft: "1rem" }}>
+                  ⚠️ {results.filter((r) => r.status === "skipped").length} skipped
+                </span>
+              )}
+            </div>
+            <div style={{ maxHeight: "300px", overflowY: "auto", fontSize: "0.83rem" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc" }}>
+                    <th style={{ padding: "0.4rem", textAlign: "left" }}>Email</th>
+                    <th style={{ padding: "0.4rem", textAlign: "left" }}>Role</th>
+                    <th style={{ padding: "0.4rem", textAlign: "left" }}>Status</th>
+                    <th style={{ padding: "0.4rem", textAlign: "left" }}>Temp Password</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((r, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <td style={{ padding: "0.35rem" }}>{r.email}</td>
+                      <td style={{ padding: "0.35rem" }}>{r.role}</td>
+                      <td style={{ padding: "0.35rem" }}>
+                        {r.status === "created"
+                          ? <span style={{ color: "#16a34a" }}>✅ Created</span>
+                          : <span style={{ color: "#d97706" }} title={r.reason}>⚠️ Skipped</span>}
+                      </td>
+                      <td style={{ padding: "0.35rem" }}>
+                        {r.tempPassword ? <code>{r.tempPassword}</code> : <span style={{ color: "#aaa" }}>—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem", justifyContent: "flex-end" }}>
+              <button className="btn-modal-approve" onClick={downloadResults}>⬇️ Download Passwords CSV</button>
+              <button className="btn-admin-sm" onClick={onDone}>Done</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 /* ── Alumni Profile Review Modal ── */
 function AlumniReviewModal({ userId, onClose, onApprove, onReject, busy }) {

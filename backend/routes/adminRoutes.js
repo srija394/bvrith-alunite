@@ -22,6 +22,8 @@ const {
   getAllJobsAdmin,
   getJobMatchesAdmin,
   exportJobMatches,
+  bulkCreateUsers,
+  resetUserPassword,
 } = require("../controllers/adminController");
 
 const router = express.Router();
@@ -39,6 +41,8 @@ router.patch("/users/:userId/role", adminOnly, changeRole);
 router.delete("/users/:userId", adminOnly, deleteUser);
 router.delete("/users/:userId/reject", adminOnly, rejectAlumni);
 router.get("/users/:userId/alumni-profile", adminOnly, getAlumniProfileForReview);
+router.post("/users/bulk-create", adminOnly, bulkCreateUsers);
+router.post("/users/:userId/reset-password", adminOnly, resetUserPassword);
 
 // Events admin
 router.get("/events", adminOnly, getAllEventsAdmin);

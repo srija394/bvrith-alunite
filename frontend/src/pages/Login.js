@@ -55,8 +55,9 @@ export default function Login() {
     setLoading(true);
     try {
       const { data } = await API.post("/auth/login", form);
-      login(data.token, data.role, form.email);
-      if (data.role === "admin") navigate("/dashboard/admin");
+      login(data.token, data.role, form.email, data.mustChangePassword);
+      if (data.mustChangePassword) navigate("/change-password");
+      else if (data.role === "admin") navigate("/dashboard/admin");
       else if (data.role === "alumni") navigate("/dashboard/alumni");
       else navigate("/dashboard/student");
     } catch (err) {
@@ -82,8 +83,9 @@ export default function Login() {
         });
         return;
       }
-      login(data.token, data.role, data.email);
-      if (data.role === "admin") navigate("/dashboard/admin");
+      login(data.token, data.role, data.email, data.mustChangePassword);
+      if (data.mustChangePassword) navigate("/change-password");
+      else if (data.role === "admin") navigate("/dashboard/admin");
       else if (data.role === "alumni") navigate("/dashboard/alumni");
       else navigate("/dashboard/student");
     } catch (err) {
@@ -152,9 +154,8 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="auth-switch">
-          Don't have an account?{" "}
-          <Link to="/register">Create one</Link>
+        <p className="auth-switch" style={{ color: "#888", fontSize: "0.82rem" }}>
+          Contact your admin if you need an account.
         </p>
       </div>
     </div>

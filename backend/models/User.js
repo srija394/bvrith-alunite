@@ -49,6 +49,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // Set to true when admin creates or resets an account — forces a
+  // password change on the user's next login before anything else.
+  mustChangePassword: {
+    type: Boolean,
+    default: false,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

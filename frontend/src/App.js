@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ChangePassword from "./pages/ChangePassword";
 import VerifyOTP from "./pages/VerifyOTP";
 import StudentDashboard from "./pages/StudentDashboard";
 import AlumniDashboard from "./pages/AlumniDashboard";
@@ -88,6 +89,7 @@ function App() {
           {/* Google OAuth role selection */}
           <Route path="/google/select-role" element={<GoogleRoleSelect />} />
 
+          <Route path="/change-password" element={<ProtectedRoute allowedRoles={["student","alumni","admin"]}><ChangePassword /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
