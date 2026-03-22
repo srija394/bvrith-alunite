@@ -9,7 +9,6 @@ import "./Jobs.css";
 function ScoreBadge({ score, matchedCount }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "60px" }}>
-      <span style={{ fontSize: "1.05rem", fontWeight: 900, color: "#0f3460" }}>{score}</span>
       <span style={{ fontSize: "0.68rem", color: "#888", textAlign: "center", lineHeight: 1.2 }}>
         {matchedCount} skill{matchedCount !== 1 ? "s" : ""} matched
       </span>

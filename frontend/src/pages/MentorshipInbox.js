@@ -149,9 +149,10 @@ function RequestCard({ req, onRespond, responding, navigate }) {
           </p>
           {profile?.skills?.length > 0 && (
             <div className="request-skills">
-              {profile.skills.slice(0, 4).map((s) => (
-                <span key={s} className="req-skill-chip">{s}</span>
-              ))}
+              {profile.skills.slice(0, 4).map((s, i) => {
+                const name = typeof s === "object" ? s.name : s;
+                return <span key={i} className="req-skill-chip">{name}</span>;
+              })}
             </div>
           )}
         </div>

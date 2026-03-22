@@ -303,14 +303,7 @@ export default function MyFiles() {
           </div>
         )}
 
-        {/* Info box */}
-        <div className="s3-info-box">
-          <span>🔒</span>
-          <p>
-            All files are stored securely in <strong>AWS S3</strong> (ap-south-1 region) with
-            private access. Download links expire after <strong>1 hour</strong> for security.
-          </p>
-        </div>
+        
       </div>
     </>
   );

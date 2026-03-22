@@ -12,6 +12,9 @@
 
 // ── Tokenize a string into lowercase words ─────────────────
 function tokenize(str = "") {
+  // Guard: coerce non-strings (numbers, objects, null, etc.) to a string
+  if (str === null || str === undefined) return [];
+  if (typeof str !== "string") str = String(str);
   return str
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
