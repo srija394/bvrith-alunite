@@ -11,10 +11,11 @@ const app = express();
 
 // Connect database
 connectDB();
-
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+  origin: function(origin, callback) {
+    callback(null, true); // allow all for now, we'll restrict later
+  },
   credentials: true,
 }));
 app.use(express.json());
