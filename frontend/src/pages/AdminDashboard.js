@@ -9,7 +9,7 @@ import ConversionTab from "./ConversionTab";
 // Helper — trigger a CSV file download from an API route
 function downloadCSV(endpoint, filename) {
   const token = localStorage.getItem("token");
-  fetch(`http://localhost:5000/api${endpoint}`, {
+  fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}${endpoint}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then((r) => r.blob())
@@ -931,7 +931,7 @@ function JobsTab() {
   const downloadMatches = (jobId, jobTitle) => {
     const token = localStorage.getItem("token");
     const safeName = jobTitle.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-    fetch(`http://localhost:5000/api/admin/jobs/${jobId}/export-matches`, {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/jobs/${jobId}/export-matches`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (r) => {
