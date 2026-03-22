@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import "./Messages.css";
+import ClickableName from "../components/ClickableName";
 
 export default function MessageThread() {
   const { userId } = useParams();
@@ -117,7 +118,7 @@ export default function MessageThread() {
             )}
           </div>
           <div className="thread-contact-info">
-            <h2>{contactName}</h2>
+            <h2><ClickableName name={contactName} userId={contact?.userId} role={contact?.role} /></h2>
             <p>
               {contact?.role === "alumni"
                 ? `${contact.profile?.currentRole || "Alumni"}${contact.profile?.currentCompany ? ` @ ${contact.profile.currentCompany}` : ""}`

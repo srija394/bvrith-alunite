@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import "./FindMentor.css";
+import ClickableName from "../components/ClickableName";
 
 export default function FindMentor() {
   const navigate = useNavigate();
@@ -181,7 +182,7 @@ function MentorCard({ rec, onRequest, navigate, getScoreColor, getScoreLabel }) 
           }
         </div>
         <div className="mentor-info">
-          <h3>{profile.fullName}</h3>
+          <h3><ClickableName name={profile.fullName} userId={alumniUserId} role="alumni" /></h3>
           <p className="mentor-role">
             {profile.currentRole
               ? `${profile.currentRole}${profile.currentCompany ? ` @ ${profile.currentCompany}` : ""}`

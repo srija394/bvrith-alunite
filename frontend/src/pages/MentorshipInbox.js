@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
+import ClickableName from "../components/ClickableName";
 import "./MentorshipInbox.css";
 
 export default function MentorshipInbox() {
@@ -140,7 +141,7 @@ function RequestCard({ req, onRespond, responding, navigate }) {
         </div>
 
         <div className="request-info">
-          <h3>{profile?.fullName || req.student?.email}</h3>
+          <h3><ClickableName name={profile?.fullName || req.student?.email} userId={req.student?.userId} role="student" /></h3>
           <p className="request-sub">
             {profile
               ? `Year ${profile.year} · ${profile.branch}${profile.section ? ` · Section ${profile.section}` : ""}`

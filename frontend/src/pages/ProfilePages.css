@@ -280,3 +280,23 @@
   flex-direction: column;
   gap: 0.4rem;
 }
+/* ── Message button on public profile pages ── */
+.btn-message-profile {
+  background: #0f3460;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1.1rem;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-message-profile:hover {
+  background: #16213e;
+  transform: translateY(-1px);
+}

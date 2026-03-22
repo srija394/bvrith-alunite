@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
+import ClickableName from "../components/ClickableName";
 import "./Forum.css";
 
 const CAT_COLOR = {
@@ -147,7 +148,7 @@ export default function ForumPostPage() {
                 {post.author.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <span className="author-name-full">{post.author.name}</span>
+                <ClickableName name={post.author.name} userId={post.author.userId} role={post.author.role} className="author-name-full" />
                 <span className={`author-role-pill ${post.author.role}`}>{post.author.role}</span>
                 <span className="post-time-full">· {timeAgo(post.createdAt)}</span>
               </div>
@@ -173,7 +174,7 @@ export default function ForumPostPage() {
                     {reply.author.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <span className="author-name-full">{reply.author.name}</span>
+                    <ClickableName name={reply.author.name} userId={reply.author.userId} role={reply.author.role} className="author-name-full" />
                     <span className={`author-role-pill ${reply.author.role}`}>{reply.author.role}</span>
                     <span className="post-time-full">· {timeAgo(reply.createdAt)}</span>
                   </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import "./AlumniDirectory.css";
+import ClickableName from "../components/ClickableName";
 
 const BRANCHES = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "AIDS", "AIML", "CSD"];
 
@@ -266,7 +267,7 @@ function AlumniCard({ alumni, navigate }) {
           }
         </div>
         <div className="card-info">
-          <h3>{alumni.fullName}</h3>
+          <h3><ClickableName name={alumni.fullName} userId={alumni.user?._id || alumni._id} role="alumni" /></h3>
           <p className="card-role">
             {alumni.currentRole
               ? `${alumni.currentRole}${alumni.currentCompany ? ` @ ${alumni.currentCompany}` : ""}`

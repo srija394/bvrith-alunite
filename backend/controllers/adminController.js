@@ -170,8 +170,10 @@ exports.getMentorshipStats = async (req, res) => {
           status: r.status,
           matchScore: r.matchScore,
           createdAt: r.createdAt,
+          studentId: r.student?._id,
           studentEmail: r.student?.email,
           studentName: studentProfile?.fullName,
+          alumniId: r.alumni?._id,
           alumniEmail: r.alumni?.email,
           alumniName: alumniProfile?.fullName,
         };

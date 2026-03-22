@@ -2,14 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 import "./ProfilePages.css";
 
 export default function PublicStudentProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     API.get(`/profile/student/${id}`)
@@ -17,6 +20,20 @@ export default function PublicStudentProfile() {
       .catch(() => setError("Student profile not found."))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Check if current alumni has an accepted mentorship with this student
+  useEffect(() => {
+    if (user?.role !== "alumni") return;
+    API.get("/mentorship/requests")
+      .then((res) => {
+        const accepted = (res.data.requests || []).some(
+          (r) => r.status === "accepted" &&
+            (r.student?.userId?.toString() === id || r.student?.userId === id)
+        );
+        setIsConnected(accepted);
+      })
+      .catch(() => {});
+  }, [id, user]);
 
   if (loading) return <><Navbar /><div className="loading">Loading profile...</div></>;
 
@@ -30,6 +47,9 @@ export default function PublicStudentProfile() {
     </>
   );
 
+  const isOwnProfile = user?.id === id;
+  const canMessage = !isOwnProfile && user?.role === "alumni" && isConnected;
+
   return (
     <>
       <Navbar />
@@ -37,6 +57,14 @@ export default function PublicStudentProfile() {
         <div className="profile-page-header">
           <h1>🎓 Student Profile</h1>
           <div className="header-actions">
+            {canMessage && (
+              <button
+                className="btn-message-profile"
+                onClick={() => navigate(`/messages/${id}`)}
+              >
+                💬 Message
+              </button>
+            )}
             <button className="btn-back" onClick={() => navigate(-1)}>← Go Back</button>
           </div>
         </div>
@@ -103,7 +131,6 @@ export default function PublicStudentProfile() {
             </div>
           )}
 
-          {/* ── Resume ── */}
           {profile.resumeUrl && (
             <div className="profile-section">
               <h3>📄 Resume</h3>
@@ -119,7 +146,6 @@ export default function PublicStudentProfile() {
             </div>
           )}
 
-          {/* ── Certificates ── */}
           {profile.certificates?.length > 0 && (
             <div className="profile-section">
               <h3>🏆 Certificates</h3>

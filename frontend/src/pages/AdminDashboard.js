@@ -1,3 +1,4 @@
+import ClickableName from "../components/ClickableName";
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -213,7 +214,9 @@ function UsersTab() {
                           👁️ {u.profile?.fullName || "View Profile"}
                         </button>
                       ) : (
-                        u.profile?.fullName || <span className="no-profile">No profile</span>
+                        u.profile?.fullName
+                          ? <ClickableName name={u.profile.fullName} userId={u._id} role={u.role} />
+                          : <span className="no-profile">No profile</span>
                       )}
                     </td>
                     <td>
@@ -436,11 +439,11 @@ function MentorshipTab() {
             {data.recent.map((r) => (
               <tr key={r._id}>
                 <td>
-                  <div className="cell-name">{r.studentName || r.studentEmail}</div>
+                  <div className="cell-name"><ClickableName name={r.studentName || r.studentEmail} userId={r.studentId} role="student" /></div>
                   <div className="cell-email">{r.studentName ? r.studentEmail : ""}</div>
                 </td>
                 <td>
-                  <div className="cell-name">{r.alumniName || r.alumniEmail}</div>
+                  <div className="cell-name"><ClickableName name={r.alumniName || r.alumniEmail} userId={r.alumniId} role="alumni" /></div>
                   <div className="cell-email">{r.alumniName ? r.alumniEmail : ""}</div>
                 </td>
                 <td>
@@ -533,7 +536,7 @@ function EventsTab() {
                   {registrants.registrants.map((r, i) => (
                     <tr key={r.userId}>
                       <td>{i + 1}</td>
-                      <td><div className="cell-name">{r.name}</div></td>
+                      <td><div className="cell-name"><ClickableName name={r.name} userId={r.userId} role={r.role} /></div></td>
                       <td className="email-cell">{r.email}</td>
                       <td><span className={`role-pill ${r.role}`}>{r.role}</span></td>
                       <td className="cell-email">
@@ -735,11 +738,6 @@ function JobsTab() {
       .catch((e) => alert(e.message));
   };
 
-  const SCORE_COLOR = (score) => {
-    if (score >= 6) return "#15803d";
-    if (score >= 3) return "#f59e0b";
-    return "#6b7280";
-  };
 
   const formatDate = (d) => d
     ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
@@ -902,24 +900,18 @@ function JobsTab() {
                                 <th>Branch</th>
                                 <th>CGPA</th>
                                 <th>Skills Matched</th>
-                                <th>Expertise Score</th>
                               </tr>
                             </thead>
                             <tbody>
                               {jobMatches.matchedStudents.map((s, i) => (
                                 <tr key={s.studentId}>
                                   <td style={{ fontWeight: 700, color: "#9ca3af" }}>#{i + 1}</td>
-                                  <td style={{ fontWeight: 600 }}>{s.fullName}</td>
+                                  <td style={{ fontWeight: 600 }}><ClickableName name={s.fullName} userId={s.studentId} role="student" /></td>
                                   <td>{s.branch}</td>
                                   <td>{s.cgpa != null ? Number(s.cgpa).toFixed(1) : "—"}</td>
                                   <td>
                                     <span style={{ background: "#e0e7ff", color: "#3730a3", borderRadius: "10px", padding: "0.15rem 0.6rem", fontSize: "0.78rem", fontWeight: 700 }}>
                                       {s.matchedCount} skill{s.matchedCount !== 1 ? "s" : ""}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span style={{ fontWeight: 900, fontSize: "1rem", color: SCORE_COLOR(s.score) }}>
-                                      {s.score}
                                     </span>
                                   </td>
                                 </tr>

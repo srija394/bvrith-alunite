@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import API from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import "./Messages.css";
+import ClickableName from "../components/ClickableName";
 
 export default function MessagesInbox() {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ export default function MessagesInbox() {
 
                 <div className="conv-info">
                   <div className="conv-top">
-                    <span className="conv-name">{getDisplayName(conv.contact)}</span>
+                    <ClickableName name={getDisplayName(conv.contact)} userId={conv.contact.userId} role={conv.contact.role} className="conv-name" />
                     <span className="conv-time">{formatTime(conv.lastMessage.createdAt)}</span>
                   </div>
                   <div className="conv-bottom">

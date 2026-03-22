@@ -2,15 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import API from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 import "./ProfilePages.css";
 import { AchievementsSection } from "./ViewProfile";
 
 export default function PublicAlumniProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     API.get(`/profile/alumni/${id}`)
@@ -18,6 +21,20 @@ export default function PublicAlumniProfile() {
       .catch(() => setError("Alumni profile not found."))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Check if current student has an accepted mentorship with this alumni
+  useEffect(() => {
+    if (user?.role !== "student") return;
+    API.get("/mentorship/my-requests")
+      .then((res) => {
+        const accepted = (res.data.requests || []).some(
+          (r) => r.status === "accepted" &&
+            (r.alumni?.userId?.toString() === id || r.alumni?.userId === id)
+        );
+        setIsConnected(accepted);
+      })
+      .catch(() => {});
+  }, [id, user]);
 
   if (loading) return <><Navbar /><div className="loading">Loading profile...</div></>;
 
@@ -31,6 +48,10 @@ export default function PublicAlumniProfile() {
     </>
   );
 
+  // Don't show message button on own profile
+  const isOwnProfile = user?.id === id;
+  const canMessage = !isOwnProfile && user?.role === "student" && isConnected;
+
   return (
     <>
       <Navbar />
@@ -38,6 +59,14 @@ export default function PublicAlumniProfile() {
         <div className="profile-page-header">
           <h1>👤 Alumni Profile</h1>
           <div className="header-actions">
+            {canMessage && (
+              <button
+                className="btn-message-profile"
+                onClick={() => navigate(`/messages/${id}`)}
+              >
+                💬 Message
+              </button>
+            )}
             <button className="btn-back" onClick={() => navigate("/alumni/directory")}>← Back to Directory</button>
           </div>
         </div>
@@ -105,7 +134,6 @@ export default function PublicAlumniProfile() {
             </div>
           )}
 
-          {/* ── Webinar Topics ── */}
           {profile.webinarTopics?.length > 0 && (
             <div className="profile-section">
               <h3>🎤 Talk & Webinar Topics</h3>
@@ -117,7 +145,6 @@ export default function PublicAlumniProfile() {
             </div>
           )}
 
-          {/* ── Resume ── */}
           {profile.resumeUrl && (
             <div className="profile-section">
               <h3>📄 Resume</h3>
@@ -133,7 +160,6 @@ export default function PublicAlumniProfile() {
             </div>
           )}
 
-          {/* ── Certificates ── */}
           {profile.certificates?.length > 0 && (
             <div className="profile-section">
               <h3>🏆 Certificates</h3>
@@ -154,7 +180,7 @@ export default function PublicAlumniProfile() {
               </div>
             </div>
           )}
-          {/* Achievements */}
+
           {profile.achievements?.length > 0 && (
             <AchievementsSection
               achievements={profile.achievements}

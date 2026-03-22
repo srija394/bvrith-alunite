@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
+import ClickableName from "../components/ClickableName";
 import "./Forum.css";
 
 const CATEGORIES = [
@@ -206,7 +207,7 @@ export default function ForumPage() {
                   <p className="post-preview">{post.content}</p>
                   <div className="post-meta">
                     <span className={`author-role ${post.author.role}`}>{post.author.role}</span>
-                    <span className="author-name">{post.author.name}</span>
+                    <ClickableName name={post.author.name} userId={post.author.userId} role={post.author.role} />
                     <span className="post-time">· {timeAgo(post.createdAt)}</span>
                   </div>
                 </div>
