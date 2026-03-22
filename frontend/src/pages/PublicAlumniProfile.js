@@ -74,8 +74,8 @@ export default function PublicAlumniProfile() {
         <div className="profile-card">
           <div className="profile-top">
             <div className="profile-avatar">
-              {profile.profilePhoto
-                ? <img src={profile.profilePhoto} alt={profile.fullName} />
+              {profile.photoUrl
+                ? <img src={profile.photoUrl} alt={profile.fullName} />
                 : <span>{profile.fullName?.[0]?.toUpperCase() || "?"}</span>
               }
             </div>

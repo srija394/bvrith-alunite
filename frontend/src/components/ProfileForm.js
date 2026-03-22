@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import API from "../utils/api";
 import "./ProfileForm.css";
 
 const BRANCHES = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "AIDS", "AIML", "CSD"];
 const LEVELS   = ["Beginner", "Intermediate", "Advanced"];
 
-// ── Skill builder — used only for student profiles ──────────────────────────
 function SkillBuilder({ skills, onChange }) {
   const [newName,  setNewName]  = useState("");
   const [newLevel, setNewLevel] = useState("Beginner");
@@ -13,14 +13,13 @@ function SkillBuilder({ skills, onChange }) {
   const addSkill = () => {
     const name = newName.trim();
     if (!name) return;
-    if (skills.some((s) => s.name.toLowerCase() === name.toLowerCase())) return; // dedupe
+    if (skills.some((s) => s.name.toLowerCase() === name.toLowerCase())) return;
     onChange([...skills, { name, level: newLevel }]);
     setNewName("");
     setNewLevel("Beginner");
   };
 
   const removeSkill = (idx) => onChange(skills.filter((_, i) => i !== idx));
-
   const updateLevel = (idx, level) =>
     onChange(skills.map((s, i) => (i === idx ? { ...s, level } : s)));
 
@@ -28,7 +27,6 @@ function SkillBuilder({ skills, onChange }) {
 
   return (
     <div className="skill-builder">
-      {/* Existing skills */}
       {skills.length > 0 && (
         <div className="skill-tags-wrap">
           {skills.map((sk, i) => (
@@ -47,8 +45,6 @@ function SkillBuilder({ skills, onChange }) {
           ))}
         </div>
       )}
-
-      {/* Add new skill */}
       <div className="skill-add-row">
         <input
           className="skill-name-input"
@@ -70,17 +66,21 @@ function SkillBuilder({ skills, onChange }) {
   );
 }
 
-// ── Main ProfileForm ─────────────────────────────────────────────────────────
 export default function ProfileForm({ initial = {}, onSubmit, loading }) {
   const { user } = useAuth();
   const isAlumni = user?.role === "alumni";
 
-  // Normalise incoming skills — could be [{name,level}] or ["React","Node"]
+  // Fetch profile photo from My Files (signed S3 URL)
+  const [photoUrl, setPhotoUrl] = useState(null);
+  useEffect(() => {
+    API.get("/upload/my-files")
+      .then((res) => { if (res.data.photo?.url) setPhotoUrl(res.data.photo.url); })
+      .catch(() => {});
+  }, []);
+
   const normaliseSkills = (raw) => {
     if (!Array.isArray(raw)) return [];
-    return raw.map((s) =>
-      typeof s === "string" ? { name: s, level: "Beginner" } : s
-    );
+    return raw.map((s) => typeof s === "string" ? { name: s, level: "Beginner" } : s);
   };
 
   const [form, setForm] = useState({
@@ -91,12 +91,9 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     linkedIn: "",
     github: "",
     bio: "",
-    profilePhoto: "",
-    // student only
     year: "",
     section: "",
     cgpa: "",
-    // alumni only
     graduationYear: "",
     currentCompany: "",
     currentRole: "",
@@ -106,7 +103,6 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     portfolioUrl: "",
     webinarTopics: "",
     ...initial,
-    // Skills: always structured array for students, plain string comma-list for alumni
     skills: isAlumni
       ? (Array.isArray(initial.skills) ? initial.skills.join(", ") : (initial.skills || ""))
       : normaliseSkills(initial.skills),
@@ -125,10 +121,9 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
     e.preventDefault();
     const payload = {
       ...form,
-      // Students send [{name, level}]; alumni send plain string array (backwards compat)
       skills: isAlumni
         ? form.skills.split(",").map((s) => s.trim()).filter(Boolean)
-        : form.skills, // already structured array
+        : form.skills,
       webinarTopics: form.webinarTopics
         ? form.webinarTopics.split(",").map((s) => s.trim()).filter(Boolean)
         : [],
@@ -138,8 +133,26 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
 
   return (
     <form className="profile-form" onSubmit={handleSubmit}>
+
+      {/* ── Profile Photo Preview ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", marginBottom: "1.5rem", padding: "1rem", background: "#f0f4ff", borderRadius: "12px", border: "1.5px solid #dbeafe" }}>
+        <div style={{ width: 72, height: 72, borderRadius: "50%", overflow: "hidden", background: "#0f3460", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "3px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+          {photoUrl
+            ? <img src={photoUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <span style={{ color: "#fff", fontSize: "1.8rem", fontWeight: 700 }}>{form.fullName?.[0]?.toUpperCase() || "?"}</span>
+          }
+        </div>
+        <div>
+          <p style={{ margin: 0, fontWeight: 600, color: "#1a1a2e", fontSize: "0.9rem" }}>Profile Photo</p>
+          <p style={{ margin: "0.2rem 0 0", color: "#666", fontSize: "0.8rem" }}>
+            {photoUrl
+              ? "✅ Photo loaded from My Files"
+              : "No photo yet — go to ☁️ My Files to upload one."}
+          </p>
+        </div>
+      </div>
+
       <div className="form-grid">
-        {/* ── Common fields ── */}
         <div className="form-group">
           <label>Full Name *</label>
           <input name="fullName" value={form.fullName} onChange={handleChange} required placeholder="e.g. Srija Reddy" />
@@ -163,7 +176,6 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
           <input name="phone" value={form.phone} onChange={handleChange} placeholder="+91 9876543210" />
         </div>
 
-        {/* ── Student-only fields ── */}
         {!isAlumni && (
           <>
             <div className="form-group">
@@ -188,7 +200,6 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
           </>
         )}
 
-        {/* ── Alumni-only fields ── */}
         {isAlumni && (
           <>
             <div className="form-group">
@@ -210,7 +221,6 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
           </>
         )}
 
-        {/* ── Social ── */}
         <div className="form-group">
           <label>LinkedIn URL</label>
           <input name="linkedIn" value={form.linkedIn} onChange={handleChange} placeholder="https://linkedin.com/in/..." />
@@ -219,12 +229,7 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
           <label>GitHub URL</label>
           <input name="github" value={form.github} onChange={handleChange} placeholder="https://github.com/..." />
         </div>
-        <div className="form-group">
-          <label>Profile Photo URL</label>
-          <input name="profilePhoto" value={form.profilePhoto} onChange={handleChange} placeholder="https://..." />
-        </div>
 
-        {/* ── Skills ── */}
         <div className="form-group full-width">
           {isAlumni ? (
             <>
@@ -245,14 +250,12 @@ export default function ProfileForm({ initial = {}, onSubmit, loading }) {
           )}
         </div>
 
-        {/* ── Bio ── */}
         <div className="form-group full-width">
           <label>Bio <span className="hint">(max 500 chars)</span></label>
           <textarea name="bio" value={form.bio} onChange={handleChange} rows={3} maxLength={500} placeholder="A short description about yourself..." />
           <span className="char-count">{(form.bio || "").length}/500</span>
         </div>
 
-        {/* ── Alumni mentorship + talks toggles ── */}
         {isAlumni && (
           <>
             <div className="form-group full-width">

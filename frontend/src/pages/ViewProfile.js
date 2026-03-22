@@ -10,6 +10,7 @@ export default function ViewProfile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [fetching, setFetching] = useState(true);
+  const [photoUrl, setPhotoUrl] = useState(null);
 
   useEffect(() => {
     API.get("/profile/me")
@@ -20,6 +21,12 @@ export default function ViewProfile() {
       .catch(() => navigate("/profile/create", { replace: true }))
       .finally(() => setFetching(false));
   }, [navigate]);
+
+  useEffect(() => {
+    API.get("/upload/my-files")
+      .then((res) => { if (res.data.photo?.url) setPhotoUrl(res.data.photo.url); })
+      .catch(() => {});
+  }, []);
 
   const dashboardLink = user?.role === "alumni"
     ? "/dashboard/alumni"
@@ -51,8 +58,8 @@ export default function ViewProfile() {
           {/* Top section */}
           <div className="profile-top">
             <div className="profile-avatar">
-              {profile.profilePhoto
-                ? <img src={profile.profilePhoto} alt="avatar" />
+              {photoUrl
+                ? <img src={photoUrl} alt="avatar" />
                 : <span>{profile.fullName?.[0]?.toUpperCase() || "?"}</span>
               }
             </div>

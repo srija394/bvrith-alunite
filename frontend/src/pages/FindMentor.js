@@ -176,8 +176,8 @@ function MentorCard({ rec, onRequest, navigate, getScoreColor, getScoreLabel }) 
       {/* Profile info */}
       <div className="mentor-profile">
         <div className="mentor-avatar">
-          {profile.profilePhoto
-            ? <img src={profile.profilePhoto} alt={profile.fullName} />
+          {(profile.photoUrl || profile.profilePhoto)
+            ? <img src={profile.photoUrl || profile.profilePhoto} alt={profile.fullName} />
             : <span>{initials}</span>
           }
         </div>

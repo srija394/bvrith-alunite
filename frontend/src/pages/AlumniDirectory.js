@@ -261,8 +261,8 @@ function AlumniCard({ alumni, navigate }) {
     <div className="alumni-card" onClick={() => navigate(`/alumni/${alumni.user?._id || alumni._id}`)}>
       <div className="card-top">
         <div className="card-avatar">
-          {alumni.profilePhoto
-            ? <img src={alumni.profilePhoto} alt={alumni.fullName} />
+          {(alumni.photoUrl || alumni.profilePhoto)
+            ? <img src={alumni.photoUrl || alumni.profilePhoto} alt={alumni.fullName} />
             : <span>{initials}</span>
           }
         </div>
