@@ -13,9 +13,10 @@ const app = express();
 connectDB();
 // Middleware
 app.use(cors({
-  origin: function(origin, callback) {
-    callback(null, true); // allow all for now, we'll restrict later
-  },
+  origin: [
+    "http://localhost:3000",
+    "http://bvrith-alunite-frontend.s3-website.ap-south-1.amazonaws.com",
+  ],
   credentials: true,
 }));
 app.use(express.json());
