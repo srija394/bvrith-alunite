@@ -246,15 +246,6 @@ function UsersTab() {
                             <button className="btn-action deactivate" disabled={busy === u._id + "reject"} onClick={() => act("reject", u._id)}>✗ Reject</button>
                           </>
                         )}
-                        <button className={`btn-action ${u.isActive ? "deactivate" : "activate"}`} disabled={busy === u._id + "toggle"} onClick={() => act("toggle", u._id)}>
-                          {u.isActive ? "Deactivate" : "Activate"}
-                        </button>
-                        {u.role === "student" && (
-                          <button className="btn-action role-change" disabled={busy === u._id + "role"} onClick={() => act("role", u._id, { role: "alumni" })}>→ Alumni</button>
-                        )}
-                        {u.role === "alumni" && (
-                          <button className="btn-action role-change" disabled={busy === u._id + "role"} onClick={() => act("role", u._id, { role: "student" })}>→ Student</button>
-                        )}
                         <button className="btn-action delete" disabled={busy === u._id + "delete"} onClick={() => act("delete", u._id)}>🗑️</button>
                       </div>
                     </td>
